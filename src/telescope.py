@@ -32,7 +32,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
 
         self.render('pages/index.html', title="Farore's wind",
-                    miolo = '<p>Test.</p>',
+                    content = '<p>Test.</p>',
                     top=open(rootdir+"/pages/top.html").read(),
                     bottom=open(rootdir+"/pages/bottom.html").read())
 
@@ -49,7 +49,7 @@ class experimentHandler(tornado.web.RequestHandler):
 
 
         if expID == '-1':
-            miolo = "<p>Experiment ID not provided.</p>"
+            content = "<p>Experiment ID not provided.</p>"
 
         else:
 
@@ -73,27 +73,27 @@ class experimentHandler(tornado.web.RequestHandler):
 
             ## Constructing the info to post on the web page
             header = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID".replace('\t',"&#9;")
-            miolo = "<p><b>Status:</b><br />" + header + "<br />" + curStatus.replace('\t',"&#9;") + "</p>"
-            miolo += "<p><b>Command:</b> python generate_test.py</p>"
+            content = "<p><b>Status:</b><br />" + header + "<br />" + curStatus.replace('\t',"&#9;") + "</p>"
+            content += "<p><b>Command:</b> python generate_test.py</p>"
 
             output2print = curOutput.replace('\n', '<br />')
 
             if outputStatus == '1':
-                miolo += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
-                miolo += "<p><b>Current status of the output:</b></p>"
+                content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+                content += "<p><b>Current status of the output:</b></p>"
 
             else:
-                miolo += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
-                miolo += "<p><b>Latest 20 lines:</b></p>"
+                content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+                content += "<p><b>Latest 20 lines:</b></p>"
 
-            miolo += "<blockquote>"
-            miolo += output2print
-            miolo += "</blockquote>"
+            content += "<blockquote>"
+            content += output2print
+            content += "</blockquote>"
 
 
         ## Rendering the page
         self.render('pages/index.html', title="Farore's wind",
-                    miolo = miolo,
+                    content = content,
                     top=open(rootdir+"/pages/top.html").read(),
                     bottom=open(rootdir+"/pages/bottom.html").read())
 
@@ -116,7 +116,7 @@ class loggingHandler(tornado.web.RequestHandler):
         logfile    = open(self.filename).read()
         logEntries = logfile.split('\n')
 
-        miolo = '<div class="page-header">' + \
+        content = '<div class="page-header">' + \
                 '<table class="table table-striped">' + \
                 '<thead><tr><th width=100px>logger</th><th>Level</th><th>date</th><th>Message</th></tr></thead>'+ \
                 '<tbody>\n'
@@ -146,14 +146,14 @@ class loggingHandler(tornado.web.RequestHandler):
                     if logLevel == "WARNING": STYLE = "style=\"color: #FA2; font-weight: bold;\""
                     if logLevel == "ERROR": STYLE = "style=\"color: #F00; font-weight: bold;\""
 
-                    miolo += "<tr " + STYLE + "><td>"+loggerID+"</td><td>"+logLevel+"</td><td>"+logDate+" "+logTime[:8]+"</td><td>"+message+"</td></tr>\n"
+                    content += "<tr " + STYLE + "><td>"+loggerID+"</td><td>"+logLevel+"</td><td>"+logDate+" "+logTime[:8]+"</td><td>"+message+"</td></tr>\n"
 
             else:
                 print( entry )
 
-        miolo += '</tbody></table></div>'
+        content += '</tbody></table></div>'
 
-        self.render(rootdir+'/pages/index.html', title="Server logs", miolo = miolo,
+        self.render(rootdir+'/pages/index.html', title="Server logs", content = content,
                     top=open(rootdir+"/pages/top.html").read(), bottom=open(rootdir+"/pages/bottom.html").read())
 
         return
