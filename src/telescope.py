@@ -55,11 +55,7 @@ class experimentHandler(tornado.web.RequestHandler):
             content = "<p>Experiment ID not provided.</p>"
 
         else:
-            ## Loading configuration file
-            config = configparser.ConfigParser()
-            config.read('../config.ini')
-            username = config['DEFAULT']['USER']
-
+           
             ## Grabbing the current state of the output file
             connection = tlscpSSH(username)
 
@@ -182,6 +178,31 @@ class telescope:
         logging.basicConfig(filename='telescope_server.log',
                             level=logging.DEBUG,
                             format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
+
+
+        ## Loading configuration file
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+            
+            
+        # Extract name of the account that will be used for log-in
+        self.credential_username = config['CREDENTIALS']['USER']
+            
+        # If there is a password listed, get that
+        if config.has_option('CREDENTIALS', 'PASS'):
+            self.credentialsPASS = config['CREDENTIALS']['PASS']
+        else:
+            self.credentialsPASS = ''
+    
+    
+        # Create a list of the users whose jobs we'd like to examine
+          
+        self.user_names = []
+        for ii in range(config['MONITOR']['NUMUSERS']):
+            self.user_names.append(config['MONITOR']['USER'+str(ii)])
+        self.user_names
+
+
 
 
         ## Starting tornado
