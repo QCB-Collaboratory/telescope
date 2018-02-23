@@ -23,10 +23,13 @@ from sshKernel import tlscpSSH
 
 class experimentHandler(tornado.web.RequestHandler):
 
-    def initialize(self, setUsername):
+    def initialize(self, credentialUsername, credentialPass = '',
+                    setUsername = []):
 
+        self.credentialUsername = credentialUsername
+        self.credentialPassword = credentialPassword
+        self.setUsernames       = setUsername
 
-        
         return
 
 
@@ -41,8 +44,9 @@ class experimentHandler(tornado.web.RequestHandler):
 
         else:
 
-            ## Grabbing the current state of the output file
-            connection = tlscpSSH('thmosque')
+            ## Connecting to the server through SSH
+            connection = tlscpSSH( self.credentialUsername,
+                                    password = self.credentialUsername )
 
             ## Accessing the current status
             connection.query("qstat | grep thmosque")
@@ -51,7 +55,7 @@ class experimentHandler(tornado.web.RequestHandler):
 
             ## Accessing the current output
             if outputStatus == '1':
-                cmd = "cat "
+                cmd = "tail -n 200 "
             else:
                 cmd = "tail -n 20 "
             connection.query( cmd + " telescope_test/output.dat" )
