@@ -36,7 +36,7 @@ while 1:
 
     if iterID > 1000:
         outputFile.close()
-        os.system( "tail -n 3000 output.dat > output.dat" )
+        os.system('tail -n 3000 output.dat > output.dat')
         outputFile = open('output.dat', 'w', 0)
 
 
