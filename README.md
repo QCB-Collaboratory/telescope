@@ -6,6 +6,10 @@ This is the awesome project we're on working today.
 
 You need to create a file name ```config.ini``` with the following format:
 ```
-[DEFAULT]
+[CREDENTIALS]
 USER = <USERNAME>
+
+[MONITOR]
+NUMUSERS = 1
+USER1 = <USERNAME>
 ```
