@@ -23,6 +23,13 @@ from sshKernel import tlscpSSH
 
 class experimentHandler(tornado.web.RequestHandler):
 
+    def initialize(self, setUsername):
+
+
+        
+        return
+
+
     def get(self):
 
         expID        = self.get_argument('expID', '-1')
