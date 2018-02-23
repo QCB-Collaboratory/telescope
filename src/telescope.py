@@ -22,25 +22,11 @@ import configparser
 
 ## Import internal modules
 from sshKernel import tlscpSSH
+from MainHandler import MainHandler
 from experimentHandler import experimentHandler
 
 
 rootdir = './'#os.path.dirname(__file__)
-
-
-class MainHandler(tornado.web.RequestHandler):
-    """
-    Root access
-    """
-
-    def get(self):
-
-        self.render('pages/index.html', title="Farore's wind",
-                    content = '<p>Test.</p>',
-                    top=open(rootdir+"/pages/top.html").read(),
-                    bottom=open(rootdir+"/pages/bottom.html").read())
-
-        return
 
 
 
