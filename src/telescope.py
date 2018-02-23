@@ -16,6 +16,9 @@ from tornado.web import asynchronous, RequestHandler, Application
 from tornado.httpclient import AsyncHTTPClient
 import logging
 
+##
+import configparser
+
 
 ## Import internal modules
 from sshKernel import tlscpSSH
@@ -52,12 +55,16 @@ class experimentHandler(tornado.web.RequestHandler):
             content = "<p>Experiment ID not provided.</p>"
 
         else:
+            ## Loading configuration file
+            config = configparser.ConfigParser()
+            config.read('../config.ini')
+            username = config['DEFAULT']['USER']
 
             ## Grabbing the current state of the output file
-            connection = tlscpSSH('thmosque')
+            connection = tlscpSSH(username)
 
             ## Accessing the current status
-            connection.query("qstat | grep thmosque")
+            connection.query("qstat | grep "+username)
             curStatus  = connection.returnedText
             time.sleep(0.5)
 
