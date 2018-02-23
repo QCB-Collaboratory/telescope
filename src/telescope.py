@@ -2,9 +2,6 @@
 import sys, os, io
 import datetime, time
 
-## signal processing and math
-import numpy as np
-
 ## to create threads
 import multiprocessing as mp
 
