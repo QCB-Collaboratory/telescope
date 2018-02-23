@@ -18,16 +18,16 @@ import logging
 from sshKernel import tlscpSSH
 
 
-
+rootdir='./'
 
 
 class experimentHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass = '',
-                    setUsername = []):
+                    setUsername = [] ):
 
         self.credentialUsername = credentialUsername
-        self.credentialPassword = credentialPassword
+        self.credentialPassword = credentialPass
         self.setUsernames       = setUsername
 
         return
@@ -45,8 +45,10 @@ class experimentHandler(tornado.web.RequestHandler):
         else:
 
             ## Connecting to the server through SSH
+
+            print( self.credentialUsername, self.credentialPassword )
             connection = tlscpSSH( self.credentialUsername,
-                                    password = self.credentialUsername )
+                                    password=self.credentialPassword )
 
             ## Accessing the current status
             connection.query("qstat | grep thmosque")
