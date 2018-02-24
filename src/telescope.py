@@ -123,7 +123,7 @@ class telescope:
         # Create a list of the users whose jobs we'd like to examine
         self.user_names = []
         if config.has_option('MONITOR', 'NUMUSERS') and ( config['MONITOR']['NUMUSERS'] > 0 ):
-            for ii in range(config['MONITOR']['NUMUSERS']):
+            for ii in range(int(config['MONITOR']['NUMUSERS'])):
                 self.user_names.append(config['MONITOR']['USER'+str(ii)])
         else:
             self.user_names.append( self.credential_username )
@@ -135,7 +135,7 @@ class telescope:
 
         ## Starting tornado
         handlers = [
-            (r'/', MainHandler),
+            (r'/', MainHandler, args),
             (r'/logging', loggingHandler),
             (r'/experiment', experimentHandler, args),
         ]
