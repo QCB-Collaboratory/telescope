@@ -16,6 +16,7 @@ import logging
 
 ## Import internal modules
 from sshKernel import tlscpSSH
+import utils
 
 
 rootdir='./'
@@ -55,18 +56,33 @@ class experimentHandler(tornado.web.RequestHandler):
                 )
             curStatus  = connection.returnedText
 
+            statParserd = utils.qstatsParser( curStatus.split('\n')[0] )
+
+            connection.query( "qstat -j " + self.jobID )
+            curStatJ    = connection.returnedText
+            sgeOWorkDir = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
+
             ## Accessing the current output
             if self.outputStatus == '1':
-                numLines = "200 "  ## cap in 200 lines!
+                numLines = 200  ## cap in 200 lines!
             else:
-                numLines = "20 "
-            connection.query( "tail -n " + numLines + " telescope_test/output.dat" )
-            curOutput  = connection.returnedText
+                numLines = 20
+
+            curOutput  = connection.grabStdOut( statParserd['jname'],
+                                                self.jobID,
+                                                sgeOWorkDir, nlines=numLines )
+
+            curErrMsg  = connection.grabErrOut( statParserd['jname'],
+                                                self.jobID,
+                                                sgeOWorkDir, nlines=numLines )
 
             connection.close()
-
+            
             ## Constructing the info to post on the web page
-            content = self.constructContent(qstat = curStatus, catStat = curOutput)
+            content = self.constructContent( qstat = curStatus,
+                                             catStat = curOutput,
+                                             catErrm = curErrMsg
+                                            )
 
 
         ## Rendering the page
@@ -79,7 +95,8 @@ class experimentHandler(tornado.web.RequestHandler):
 
 
 
-    def constructContent(self, qstat = '', catStat = ''):
+
+    def constructContent(self, qstat = '', catStat = '', catErrm = ''):
         """
         Constructs the content of the page describing the status of the
         """
@@ -94,17 +111,28 @@ class experimentHandler(tornado.web.RequestHandler):
         output2print = catStat.replace('\n', '<br />')
 
         if self.outputStatus == '1':
-            content += "<p><b>Current status of the output:</b></p>"
+            content += "<h2>Current status of the output</h2>"
             content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
-
-
         else:
-            content += "<p><b>Latest 20 lines in the output file:</b></p>"
+            content += "<h2>Current status of the output (last 20 lines)</h2>"
             content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
 
         content += "<blockquote>"
         content += output2print
         content += "</blockquote>"
 
+
+        output2print = catErrm.replace('\n', '<br />')
+
+        if self.outputStatus == '1':
+            content += "<h2>Error messages:</h2>"
+            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+        else:
+            content += "<h2>Error messages (last 20 lines):</h2>"
+            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+
+        content += "<blockquote>"
+        content += output2print
+        content += "</blockquote>"
 
         return content

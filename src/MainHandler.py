@@ -17,6 +17,7 @@ import logging
 
 ## Import internal modules
 from sshKernel import tlscpSSH
+import utils
 
 
 rootdir='./'
@@ -36,36 +37,6 @@ class MainHandler(tornado.web.RequestHandler):
         return
 
 
-    def qstatsParser(self, statusLine):
-        """
-        Parser for the status coming back from qstat.
-        """
-
-        ## Splitting by space
-        statusLine_split = statusLine.split(' ')
-
-        ## Dictionary to store the info
-        parsed = {}
-
-        ## Parsing job id, name and timestamp when job started
-        parsed['jid']    = statusLine_split[0]
-        parsed['jname']  = statusLine_split[2]
-        parsed['date']   = statusLine_split[13] + ' ' + statusLine_split[14]
-
-        ## Parsing the status column
-
-        if statusLine_split[8] == 'qw':
-            parsed['jstate'] = '<span style="color: #FF0000;">Queued</span>'
-
-        if statusLine_split[8] == 'r':
-            parsed['jstate'] = '<span style="color: #00AA00;">Running</span>'
-
-        else:
-            parsed['jstate'] = statusLine_split[8]
-
-        return parsed
-
-
 
     def get(self):
 
@@ -76,13 +47,12 @@ class MainHandler(tornado.web.RequestHandler):
         ## Accessing the current status
         connection.query( "qstat -u " + self.setUsernames[0] )
         curStatus  = connection.returnedText
-
-
+        
 
         content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
 
         # Splitting string per line
-        curStatus_splist = curStatus.split('\n')
+        curStatus_splist = curStatus.split('\n')[2:]
 
         content += '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
@@ -94,11 +64,14 @@ class MainHandler(tornado.web.RequestHandler):
                     '</tr></thead>'+ \
                     '<tbody>\n'
 
-        for j in range(2, len(curStatus_splist) - 3 ):
+        for j in range(len(curStatus_splist)):
+
+            if curStatus_splist[j] == '': break
+
             # Starting new row
             content += '<tr>'
             # Parsing data from qstat
-            statParserd = self.qstatsParser( curStatus_splist[j] )
+            statParserd = utils.qstatsParser( curStatus_splist[j] )
             # Writing the info into the row
             content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
                         statParserd['jid']    + '</a></td>' + \

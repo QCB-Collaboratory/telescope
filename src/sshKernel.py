@@ -1,5 +1,6 @@
 import logging, time
 import paramiko
+import os
 
 
 class tlscpSSH:
@@ -68,6 +69,24 @@ class tlscpSSH:
         else:
             return "No connection."
 
+
+
+    def grabStdOut(self, jobName, jobID, workDir, nlines=20):
+        filename = jobName + ".o" + jobID
+        path2file = os.path.join( workDir, filename )
+        return self.grabFile( path2file, nlines=nlines )
+
+    def grabErrOut(self, jobName, jobID, workDir, nlines=20):
+        filename = jobName + ".e" + jobID
+        path2file = os.path.join( workDir, filename )
+        return self.grabFile( path2file, nlines=nlines )
+
+    def grabFile(self, path2file, nlines=20 ):
+        cmd  = "tail -n " + str(nlines) + " " + path2file
+        self.query( cmd )
+        res = self.returnedText
+        self.returnedText = ''
+        return res
 
 
     def close(self):
