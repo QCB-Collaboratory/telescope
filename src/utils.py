@@ -16,11 +16,11 @@ def qstatsParser(statusLine):
     parsed['date']   = statusLine_split[13] + ' ' + statusLine_split[14]
 
     ## Parsing the status column
-
+    
     if statusLine_split[8] == 'qw':
         parsed['jstate'] = '<span style="color: #FF0000;">Queued</span>'
 
-    if statusLine_split[8] == 'r':
+    elif statusLine_split[8] == 'r':
         parsed['jstate'] = '<span style="color: #00AA00;">Running</span>'
 
     else:
