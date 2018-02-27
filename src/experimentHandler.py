@@ -21,6 +21,7 @@ from sshKernel import tlscpSSH
 rootdir='./'
 
 
+
 class experimentHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass = '',
@@ -35,54 +36,35 @@ class experimentHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        expID        = self.get_argument('expID', '-1')
-        outputStatus = self.get_argument('outputFormat', '0')
+        self.expID        = self.get_argument('expID', '-1')
+        self.outputStatus = self.get_argument('outputFormat', '0')
 
 
-        if expID == '-1':
+        if self.expID == '-1':
             content = "<p>Experiment ID not provided.</p>"
 
         else:
 
             ## Connecting to the server through SSH
-
-            print( self.credentialUsername, self.credentialPassword )
             connection = tlscpSSH( self.credentialUsername,
                                     password=self.credentialPassword )
 
             ## Accessing the current status
-            connection.query("qstat | grep thmosque")
+            connection.query( "qstat -u " + self.setUsernames[0] )
             curStatus  = connection.returnedText
-            time.sleep(0.5)
 
             ## Accessing the current output
-            if outputStatus == '1':
-                cmd = "tail -n 200 "
+            if self.outputStatus == '1':
+                numLines = "200 "  ## cap in 200 lines!
             else:
-                cmd = "tail -n 20 "
-            connection.query( cmd + " telescope_test/output.dat" )
+                numLines = "20 "
+            connection.query( "tail -n " + numLines + " telescope_test/output.dat" )
             curOutput  = connection.returnedText
 
             connection.close()
 
             ## Constructing the info to post on the web page
-            header = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID".replace('\t',"&#9;")
-            content = "<p><b>Status:</b><br />" + header + "<br />" + curStatus.replace('\t',"&#9;") + "</p>"
-            content += "<p><b>Command:</b> python generate_test.py</p>"
-
-            output2print = curOutput.replace('\n', '<br />')
-
-            if outputStatus == '1':
-                content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
-                content += "<p><b>Current status of the output:</b></p>"
-
-            else:
-                content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
-                content += "<p><b>Latest 20 lines:</b></p>"
-
-            content += "<blockquote>"
-            content += output2print
-            content += "</blockquote>"
+            content = self.constructContent(qstat = curStatus, catStat = curOutput)
 
 
         ## Rendering the page
@@ -92,3 +74,37 @@ class experimentHandler(tornado.web.RequestHandler):
                     bottom=open(rootdir+"/pages/bottom.html").read())
 
         return
+
+
+
+    def constructContent(self, qstat = '', catStat = ''):
+        """
+        Constructs the content of the page describing the status of the
+        """
+
+        print( catStat, qstat )
+
+        header = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID".replace('\t',"&#9;")
+
+        statusLine = qstat.replace('\t',"&#9;").split('\n')[2]
+
+        content = "<p><b>Status:</b><br />" + header + "<br />" + statusLine + "</p>"
+        content += "<p><b>Command:</b> python generate_test.py</p>"
+
+        output2print = catStat.replace('\n', '<br />')
+
+        if self.outputStatus == '1':
+            content += "<p><b>Current status of the output:</b></p>"
+            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+
+
+        else:
+            content += "<p><b>Latest 20 lines in the output file:</b></p>"
+            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+
+        content += "<blockquote>"
+        content += output2print
+        content += "</blockquote>"
+
+
+        return content

@@ -129,15 +129,15 @@ class telescope:
             self.user_names.append( self.credential_username )
 
 
-        args = { 'credentialUsername' : self.credential_username,
+        loginInfo = { 'credentialUsername' : self.credential_username,
                  'credentialPass' : self.credentials_pass,
                  'setUsername' : self.user_names }
 
         ## Starting tornado
         handlers = [
-            (r'/', MainHandler, args),
+            (r'/', MainHandler, loginInfo),
             (r'/logging', loggingHandler),
-            (r'/experiment', experimentHandler, args),
+            (r'/experiment', experimentHandler, loginInfo),
         ]
 
         settings = dict(

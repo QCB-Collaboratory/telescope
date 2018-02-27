@@ -37,9 +37,18 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        # content = '<p>Test.</p>'
-        someRead = self.readFile()
-        content = '<p>Test. '+someRead['glossary']['title'] + '</p>'
+        content = "<p>Welcome to Telescope. Below you will find a list of your jobs:</p>"
+
+        ## Connecting to the server through SSH
+        connection = tlscpSSH( self.credentialUsername,
+                                password=self.credentialPassword )
+
+        ## Accessing the current status
+        connection.query( "qstat -u " + self.setUsernames[0] )
+        curStatus  = connection.returnedText
+
+        content = "<p>" + curStatus.replace('\n', '<br />') + "</p>"
+
         self.render('pages/index.html', title="Farore's wind",
                     content = content,
                     top=open(rootdir+"/pages/top.html").read(),
@@ -62,7 +71,7 @@ class MainHandler(tornado.web.RequestHandler):
         cmdOutput = cmdOutput.split('\n')
         for f in cmdOutput:
             if f == dbFileString: # Change this to something less hard coded?
-                print "This is the json filename: ",f
+                print( "This is the json filename: ", f )
                 commandString+=dbFileString
                 connection.query(commandString)
                 cmdOutput = connection.returnedText
