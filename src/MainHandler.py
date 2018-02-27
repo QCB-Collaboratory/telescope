@@ -43,7 +43,6 @@ class MainHandler(tornado.web.RequestHandler):
 
         ## Splitting by space
         statusLine_split = statusLine.split(' ')
-        print(statusLine_split)
 
         ## Dictionary to store the info
         parsed = {}
@@ -70,8 +69,6 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        content = "<p>Welcome to Telescope. Below you will find a list of your jobs:</p>"
-
         ## Connecting to the server through SSH
         connection = tlscpSSH( self.credentialUsername,
                                 password=self.credentialPassword )
@@ -80,9 +77,14 @@ class MainHandler(tornado.web.RequestHandler):
         connection.query( "qstat -u " + self.setUsernames[0] )
         curStatus  = connection.returnedText
 
+
+
+        content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
+
+        # Splitting string per line
         curStatus_splist = curStatus.split('\n')
 
-        content = '<div class="page-header">' + \
+        content += '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
                     '<thead><tr>' + \
                     '<th width=100px>Job ID</th>' + \
@@ -98,7 +100,8 @@ class MainHandler(tornado.web.RequestHandler):
             # Parsing data from qstat
             statParserd = self.qstatsParser( curStatus_splist[j] )
             # Writing the info into the row
-            content +=  '<td>' + statParserd['jid']    + '</td>' + \
+            content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
+                        statParserd['jid']    + '</a></td>' + \
                         '<td>' + statParserd['jname']  + '</td>' + \
                         '<td>' + statParserd['jstate'] + '</td>' + \
                         '<td>' + statParserd['date']   + '</td>'

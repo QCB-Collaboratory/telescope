@@ -36,11 +36,11 @@ class experimentHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        self.expID        = self.get_argument('expID', '-1')
+        self.jobID        = self.get_argument('jobID', '-1')
         self.outputStatus = self.get_argument('outputFormat', '0')
 
 
-        if self.expID == '-1':
+        if self.jobID == '-1':
             content = "<p>Experiment ID not provided.</p>"
 
         else:
@@ -50,7 +50,9 @@ class experimentHandler(tornado.web.RequestHandler):
                                     password=self.credentialPassword )
 
             ## Accessing the current status
-            connection.query( "qstat -u " + self.setUsernames[0] )
+            connection.query(
+                "qstat -u " + self.setUsernames[0] + " | grep " + self.jobID
+                )
             curStatus  = connection.returnedText
 
             ## Accessing the current output
@@ -82,11 +84,9 @@ class experimentHandler(tornado.web.RequestHandler):
         Constructs the content of the page describing the status of the
         """
 
-        print( catStat, qstat )
-
         header = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID".replace('\t',"&#9;")
 
-        statusLine = qstat.replace('\t',"&#9;").split('\n')[2]
+        statusLine = qstat.replace('\t',"&#9;")
 
         content = "<p><b>Status:</b><br />" + header + "<br />" + statusLine + "</p>"
         content += "<p><b>Command:</b> python generate_test.py</p>"
