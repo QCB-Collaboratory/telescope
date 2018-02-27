@@ -52,7 +52,6 @@ class tlscpSSH:
                 if stdout.channel.recv_ready():
                     stdin.close()
                     std_out = stdout.readlines()
-                    print( ''.join(std_out) )
                     self.returnedText = ''.join(std_out)
                     return 1
 

@@ -35,6 +35,39 @@ class MainHandler(tornado.web.RequestHandler):
 
         return
 
+
+    def qstatsParser(self, statusLine):
+        """
+        Parser for the status coming back from qstat.
+        """
+
+        ## Splitting by space
+        statusLine_split = statusLine.split(' ')
+        print(statusLine_split)
+
+        ## Dictionary to store the info
+        parsed = {}
+
+        ## Parsing job id, name and timestamp when job started
+        parsed['jid']    = statusLine_split[0]
+        parsed['jname']  = statusLine_split[2]
+        parsed['date']   = statusLine_split[13] + ' ' + statusLine_split[14]
+
+        ## Parsing the status column
+
+        if statusLine_split[8] == 'qw':
+            parsed['jstate'] = '<span style="color: #FF0000;">Queued</span>'
+
+        if statusLine_split[8] == 'r':
+            parsed['jstate'] = '<span style="color: #00AA00;">Running</span>'
+
+        else:
+            parsed['jstate'] = statusLine_split[8]
+
+        return parsed
+
+
+
     def get(self):
 
         content = "<p>Welcome to Telescope. Below you will find a list of your jobs:</p>"
@@ -47,7 +80,33 @@ class MainHandler(tornado.web.RequestHandler):
         connection.query( "qstat -u " + self.setUsernames[0] )
         curStatus  = connection.returnedText
 
-        content = "<p>" + curStatus.replace('\n', '<br />') + "</p>"
+        curStatus_splist = curStatus.split('\n')
+
+        content = '<div class="page-header">' + \
+                    '<table class="table table-striped">' + \
+                    '<thead><tr>' + \
+                    '<th width=100px>Job ID</th>' + \
+                    '<th>Job name</th>' + \
+                    '<th>state</th>' + \
+                    '<th>Started</th>' + \
+                    '</tr></thead>'+ \
+                    '<tbody>\n'
+
+        for j in range(2, len(curStatus_splist) - 3 ):
+            # Starting new row
+            content += '<tr>'
+            # Parsing data from qstat
+            statParserd = self.qstatsParser( curStatus_splist[j] )
+            # Writing the info into the row
+            content +=  '<td>' + statParserd['jid']    + '</td>' + \
+                        '<td>' + statParserd['jname']  + '</td>' + \
+                        '<td>' + statParserd['jstate'] + '</td>' + \
+                        '<td>' + statParserd['date']   + '</td>'
+            ## End of row
+            content += '</tr>'
+
+        content += '</tbody></table></div>'
+
 
         self.render('pages/index.html', title="Farore's wind",
                     content = content,
