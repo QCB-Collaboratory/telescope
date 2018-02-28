@@ -23,6 +23,8 @@ class tlscpSSH:
                                         look_for_keys=True
                                 )
 
+        self.returnedText = ''
+
         ### This helps double-checkig the connection was made -- should be re-done!
         # try:
         #     transport = self.sshClient.get_transport()
@@ -35,6 +37,11 @@ class tlscpSSH:
 
         return
 
+
+
+
+    def getQueryResult(self):
+        return self.returnedText
 
 
     def query(self, command):

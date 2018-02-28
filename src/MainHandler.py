@@ -3,8 +3,6 @@ import sys, os, io
 import datetime, time
 import json
 
-## to create threads
-import multiprocessing as mp
 
 ## For the web service
 import tornado.ioloop
@@ -16,6 +14,7 @@ import logging
 
 
 ## Import internal modules
+import jobStatusMonitor
 from sshKernel import tlscpSSH
 import utils
 
@@ -27,12 +26,19 @@ class MainHandler(tornado.web.RequestHandler):
     """
     Root access
     """
-    def initialize(self, credentialUsername, credentialPass = '',
-                    setUsername = [] ):
 
+    def initialize(self, credentialUsername, credentialPass = '',
+                    setUsername = [], queueMonitor = '' ):
+
+        # Credentials for log in
         self.credentialUsername = credentialUsername
         self.credentialPassword = credentialPass
+
+        # Usernames to keep track of
         self.setUsernames       = setUsername
+
+        # Server's queue monitoringInterval
+        self.queueMonitor = queueMonitor
 
         return
 
@@ -40,14 +46,8 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        ## Connecting to the server through SSH
-        connection = tlscpSSH( self.credentialUsername,
-                                password=self.credentialPassword )
-
-        ## Accessing the current status
-        connection.query( "qstat -u " + self.setUsernames[0] )
-        curStatus  = connection.returnedText
-        
+        # Grabt the latest status from the servers
+        curStatus  = self.queueMonitor.getMonitorCurrentStatus()
 
         content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
 
@@ -90,6 +90,9 @@ class MainHandler(tornado.web.RequestHandler):
                     bottom=open(rootdir+"/pages/bottom.html").read())
 
         return
+
+
+
 
     def readFile(self,dbFileString = ".telescope.json"):
         """

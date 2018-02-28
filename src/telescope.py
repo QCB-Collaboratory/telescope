@@ -2,11 +2,10 @@
 import sys, os, io
 import datetime, time
 
-## signal processing and math
-import numpy as np
-
-## to create threads
+## to create parallel processes
 import multiprocessing as mp
+from multiprocessing import Process, Manager
+from multiprocessing.managers import BaseManager
 
 ## For the web service
 import tornado.ioloop
@@ -22,6 +21,7 @@ import configparser
 
 ## Import internal modules
 from sshKernel import tlscpSSH
+from jobStatusMonitor import jobStatusMonitor
 from MainHandler import MainHandler
 from experimentHandler import experimentHandler
 import utils
@@ -92,8 +92,31 @@ class loggingHandler(tornado.web.RequestHandler):
 
 
 
+def monitorLoop( queueMonitor ):
+    """
+    Loop that keeps updating the monitor in constant
+    intervals of time.
+    """
+
+    logger = logging.getLogger(__name__)
+
+    while 1:
+
+        logger.info('Queue monitor running...')
+
+        queueMonitor.checkQstat()
+
+        # sleeping between each call
+        logger.info('Queue monitor sleeping...')
+        time.sleep( queueMonitor.getMonitoringInterval() )
+
+    return
+
+
+
 
 class telescope:
+
 
     def __init__(self):
         """ This starts the server.
@@ -105,11 +128,14 @@ class telescope:
         logging.basicConfig(filename='telescope_server.log',
                             level=logging.DEBUG,
                             format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
+        logger = logging.getLogger(__name__)
+        logger.info('Logging setup done.')
 
 
         ## Loading configuration file
         config = configparser.ConfigParser()
         config.read('config.ini')
+        logger.info('Configurations read succesfully.')
 
 
         # Extract name of the account that will be used for log-in
@@ -117,9 +143,11 @@ class telescope:
 
         # If there is a password listed, get that
         if config.has_option('CREDENTIALS', 'PASS'):
-            self.credentials_pass = config['CREDENTIALS']['PASS']
+            self.credential_password = config['CREDENTIALS']['PASS']
         else:
-            self.credentials_pass = ''
+            self.credential_password = ''
+
+        logger.info('Credentials parsed.')
 
         # Create a list of the users whose jobs we'd like to examine
         self.user_names = []
@@ -129,24 +157,52 @@ class telescope:
         else:
             self.user_names.append( self.credential_username )
 
+        logger.info('Monitored users parsed.')
 
-        loginInfo = { 'credentialUsername' : self.credential_username,
-                 'credentialPass' : self.credentials_pass,
-                 'setUsername' : self.user_names }
+
+        ## Starting monitor jobs
+
+        # Creating a monitor object
+        BaseManager.register('jobStatusMonitor', jobStatusMonitor)
+        manager = BaseManager()
+        manager.start()
+        self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
+                                                        self.credential_password,
+                                                        self.user_names )
+        # Kicking the monitor job
+        monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
+        monitorLoop_process.start()
+
+
+        logger.info('Parallel status monitor started.')
 
         ## Starting tornado
+
+        # Defining argument dictionary
+        handlerArguments = { 'credentialUsername' : self.credential_username,
+                                'credentialPass'     : self.credential_password,
+                                'setUsername'        : self.user_names,
+                                'queueMonitor'       : self.queueMonitor }
+
+        # Setting up handlers
         handlers = [
-            (r'/', MainHandler, loginInfo),
+            (r'/', MainHandler, handlerArguments),
             (r'/logging', loggingHandler),
-            (r'/experiment', experimentHandler, loginInfo),
+            (r'/experiment', experimentHandler, handlerArguments),
         ]
 
+        # General settings
         settings = dict(
             static_path = os.path.join(os.path.dirname(__file__), "pages")
             )
 
+        logger.info('Tornado setup done.')
+
+        # Starting tornado server loop
         application = web.Application(handlers, **settings)
         application.listen(self.port)
+
+        logger.info('About to start tornado loop...')
         tornado.ioloop.IOLoop.instance().start()
 
         return
