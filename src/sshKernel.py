@@ -53,6 +53,8 @@ class tlscpSSH:
         # Check if connection is made previously
         if ( self.sshClient ):
 
+            self.returnedText = ''
+
             stdin, stdout, stderr = self.sshClient.exec_command(command)
             while not stdout.channel.exit_status_ready():
                 time.sleep(2)
@@ -88,8 +90,14 @@ class tlscpSSH:
         path2file = os.path.join( workDir, filename )
         return self.grabFile( path2file, nlines=nlines )
 
-    def grabFile(self, path2file, nlines=20 ):
-        cmd  = "tail -n " + str(nlines) + " " + path2file
+    def grabFile(self, path2file, nlines=20, order = -1 ):
+        
+        if order == 1:
+            readCMD = "head"
+        else:
+            readCMD = "tail"
+
+        cmd  = readCMD + " -n " + str(nlines) + " " + path2file
         self.query( cmd )
         res = self.returnedText
         self.returnedText = ''

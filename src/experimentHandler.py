@@ -26,11 +26,17 @@ rootdir='./'
 class experimentHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass = '',
-                    setUsername = [] ):
+                    setUsername = [], queueMonitor = '' ):
 
+        # Credentials for log in
         self.credentialUsername = credentialUsername
         self.credentialPassword = credentialPass
+
+        # Usernames to keep track of
         self.setUsernames       = setUsername
+
+        # Server's queue monitoringInterval
+        self.queueMonitor = queueMonitor
 
         return
 
@@ -46,21 +52,23 @@ class experimentHandler(tornado.web.RequestHandler):
 
         else:
 
+            # Grabt the latest status from the servers
+            curStatus  = self.queueMonitor.getMonitorCurrentStatus().split('\n')
+            curStatus = [ s for s in curStatus if self.jobID in s ][0]
+            statParserd = utils.qstatsParser( curStatus )
+
             ## Connecting to the server through SSH
             connection = tlscpSSH( self.credentialUsername,
                                     password=self.credentialPassword )
-
-            ## Accessing the current status
-            connection.query(
-                "qstat -u " + self.setUsernames[0] + " | grep " + self.jobID
-                )
-            curStatus  = connection.returnedText
-
-            statParserd = utils.qstatsParser( curStatus.split('\n')[0] )
-
             connection.query( "qstat -j " + self.jobID )
-            curStatJ    = connection.returnedText
-            sgeOWorkDir = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
+            curStatJ     = connection.returnedText
+            # Name of the script
+            sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
+            # Working directory
+            sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
+            # Capturing Job Name -- if job name is too long, qstat only shows
+            # the beginning of the job name. This ensures we get the full name.
+            sgeJobName   = curStatJ.split( 'job_name:' )[1].split('\n')[0].replace(' ','')
 
             ## Accessing the current output
             if self.outputStatus == '1':
@@ -68,20 +76,24 @@ class experimentHandler(tornado.web.RequestHandler):
             else:
                 numLines = 20
 
-            curOutput  = connection.grabStdOut( statParserd['jname'],
-                                                self.jobID,
+            curOutput  = connection.grabStdOut( sgeJobName, self.jobID,
                                                 sgeOWorkDir, nlines=numLines )
 
-            curErrMsg  = connection.grabErrOut( statParserd['jname'],
-                                                self.jobID,
+            curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
                                                 sgeOWorkDir, nlines=numLines )
+
+            scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
+                                                nlines=20, order=1 )
 
             connection.close()
-            
+
             ## Constructing the info to post on the web page
-            content = self.constructContent( qstat = curStatus,
+            content = self.constructContent( qstat = curStatus, qstat_parsed=statParserd,
                                              catStat = curOutput,
-                                             catErrm = curErrMsg
+                                             catErrm = curErrMsg,
+                                             workDir = sgeOWorkDir,
+                                             scriptName = sgeScriptRun,
+                                             scriptContent = scriptContent
                                             )
 
 
@@ -96,43 +108,59 @@ class experimentHandler(tornado.web.RequestHandler):
 
 
 
-    def constructContent(self, qstat = '', catStat = '', catErrm = ''):
+    def constructContent(self, qstat = '', qstat_parsed = [], catStat = '', catErrm = '',
+                            workDir = '', scriptName = '', scriptContent = ''):
         """
         Constructs the content of the page describing the status of the
         """
 
-        header = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID".replace('\t',"&#9;")
+        content = '<div class="page-header">' + \
+                    '<table class="table table-striped">' + \
+                    '<thead><tr>' + \
+                    '<th width=100px>Job ID</th>' + \
+                    '<th>Job name</th>' + \
+                    '<th>State</th>' + \
+                    '<th>Started in</th>' + \
+                    '</tr></thead>'+ \
+                    '<tbody>\n'
 
-        statusLine = qstat.replace('\t',"&#9;")
 
-        content = "<p><b>Status:</b><br />" + header + "<br />" + statusLine + "</p>"
-        content += "<p><b>Command:</b> python generate_test.py</p>"
+        # Starting new row
+        content += '<tr>'
+        # Writing the info into the row
+        content +=  '<td><a href="/experiment?jobID=' + qstat_parsed['jid'] + '">' + \
+                    qstat_parsed['jid']    + '</a></td>' + \
+                    '<td>' + qstat_parsed['jname']  + '</td>' + \
+                    '<td>' + qstat_parsed['jstate'] + '</td>' + \
+                    '<td>' + qstat_parsed['date']   + '</td>'
+        ## End of row
+        content += '</tr>'
+        content += '</tbody></table></div>'
 
-        output2print = catStat.replace('\n', '<br />')
+        content += "<p><b>Script name:</b> " + scriptName + "</p>"
+        content += "<p><b>Directory:</b> " + workDir + "</p>"
+
+        content += "<h3>Content of the script file:</h3>"
+        content += "<blockquote>" + scriptContent.replace('\n', '<br />') + "</blockquote>"
+
 
         if self.outputStatus == '1':
-            content += "<h2>Current status of the output</h2>"
-            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+            content += "<h3>Current status of the output</h3>"
+            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
         else:
-            content += "<h2>Current status of the output (last 20 lines)</h2>"
-            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+            content += "<h3>Current status of the output (last 20 lines)</h3>"
+            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
 
-        content += "<blockquote>"
-        content += output2print
-        content += "</blockquote>"
+        content += "<blockquote>" + catStat.replace('\n', '<br />') + "</blockquote>"
 
-
-        output2print = catErrm.replace('\n', '<br />')
 
         if self.outputStatus == '1':
-            content += "<h2>Error messages:</h2>"
-            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+            content += "<h3>Error messages:</h3>"
+            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
         else:
-            content += "<h2>Error messages (last 20 lines):</h2>"
-            content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+            content += "<h3>Error messages (last 20 lines):</h3>"
+            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
 
-        content += "<blockquote>"
-        content += output2print
-        content += "</blockquote>"
+        content += "<blockquote>" + catErrm.replace('\n', '<br />') + "</blockquote>"
 
         return content

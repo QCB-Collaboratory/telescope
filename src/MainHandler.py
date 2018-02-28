@@ -60,7 +60,7 @@ class MainHandler(tornado.web.RequestHandler):
                     '<th width=100px>Job ID</th>' + \
                     '<th>Job name</th>' + \
                     '<th>state</th>' + \
-                    '<th>Started</th>' + \
+                    '<th>Started in</th>' + \
                     '</tr></thead>'+ \
                     '<tbody>\n'
 
