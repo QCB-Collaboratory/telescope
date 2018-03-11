@@ -2,7 +2,7 @@
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
 <img src="https://img.shields.io/badge/Python-_2.7,_3.*-brightgreen.svg">
-
+[<img src="https://img.shields.io/badge/gitter_-_chat_online_-blue.svg">](https://gitter.im/unix-telescope/Lobby)
 
 This is the awesome project we're on working today.
 
