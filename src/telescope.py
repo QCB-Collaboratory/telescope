@@ -25,7 +25,7 @@ from jobStatusMonitor import jobStatusMonitor
 from MainHandler import MainHandler
 from experimentHandler import experimentHandler
 import utils
-
+import webbrowser
 
 rootdir = './'#os.path.dirname(__file__)
 
@@ -211,4 +211,6 @@ class telescope:
 
 
 if __name__ == "__main__":
+    # This will open a new tab in your default browser
+    webbrowser.open_new_tab('http://localhost:4000')
     server = telescope()
