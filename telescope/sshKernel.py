@@ -9,7 +9,7 @@ class tlscpSSH:
     use of SSH keys and password.
     """
 
-    def __init__(self, username, password='', address = 'hoffman2.idre.ucla.edu'):
+    def __init__(self, username, password='', address = ''):
 
         logging.info("tlscpSSH: Connecting to server.")
 
