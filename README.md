@@ -8,12 +8,46 @@ Telescope is an open-source web applciation that tracks the progress of jobs sub
 
 This project was in great part developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018), at the [QCB Collaboratory](https://qcb.ucla.edu/collaboratory/), UCLA.
 
-## Installation
+<br />
 
-The easiest way to install telescope is by using pip:
+## Quick start
+
+There are very few steps necessary to get started with Telescope. The easiest way to install telescope is by using pip:
 ```
 pip install git+https://github.com/QCB-Collaboratory//telescope
 ```
+Assuming you already have a SSH key pair setup with your server (if not, [click here for how to proceed](https://github.com/QCB-Collaboratory/telescope/blob/master/test/Readme.md)), create a file called ```config.ini``` with the following content:
+```
+[CREDENTIALS]
+USER   = <USERNAME>
+SERVER = <SERVER ADDRESS>
+```
+Create another file called ```RunTelescope.py``` with the following content:
+```Python
+import telescope
+
+server = telescope.server()
+server.run()
+```
+Finally, run this python script:
+```
+python RunTelescope.py
+```
+This should automatically open a web broswer with telescope. If an error message appears, you may have found a bug -- we'd appreciate if you could report it.
+
+For more details, please visit our [wiki](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) or join the conversation at [gitter](https://gitter.im/unix-telescope/Lobby).
+
+
+<br />
+
+### Bugs and suggestions
+
+If you find bugs and/or have suggestions for Telescope, please
+* [Open an issue](https://github.com/QCB-Collaboratory/telescope/issues) with a detailed description;
+* Use [gitter](https://gitter.im/unix-telescope/Lobby) to talk to us.
+
+
+<br />
 
 ### Dependencies
 
@@ -23,6 +57,8 @@ Telescope can be self-host and track jobs from a list of users. It runs in Pytho
 * tornado
 * configparser
 
+
+<br />
 
 ## License
 
