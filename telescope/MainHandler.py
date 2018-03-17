@@ -14,9 +14,9 @@ import logging
 
 
 ## Import internal modules
-import jobStatusMonitor
-from sshKernel import tlscpSSH
-import utils
+import telescope.jobStatusMonitor as jobStatusMonitor
+from telescope.sshKernel import tlscpSSH
+import telescope.utils as utils
 
 rootdir=os.path.dirname(__file__)
 
@@ -26,7 +26,7 @@ class MainHandler(tornado.web.RequestHandler):
     Root access
     """
 
-    def initialize(self, credentialUsername, credentialPass, remoteServerAddress
+    def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
                     setUsername, queueMonitor ):
 
         # Credentials for log in
@@ -72,6 +72,7 @@ class MainHandler(tornado.web.RequestHandler):
             content += '<tr>'
             # Parsing data from qstat
             statParserd = utils.qstatsParser( curStatus_splist[j] )
+            print(statParserd)
             # Writing the info into the row
             content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
                         statParserd['jid']    + '</a></td>' + \

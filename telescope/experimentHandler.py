@@ -15,8 +15,8 @@ import logging
 
 
 ## Import internal modules
-from sshKernel import tlscpSSH
-import utils
+from telescope.sshKernel import tlscpSSH
+import telescope.utils as utils
 
 rootdir=os.path.dirname(__file__)
 

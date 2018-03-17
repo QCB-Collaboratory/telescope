@@ -6,8 +6,8 @@ import datetime, time
 import xml.etree.ElementTree as ElementTree
 
 ## Import internal modules
-from sshKernel import tlscpSSH
-import utils
+from telescope.sshKernel import tlscpSSH
+import telescope.utils as utils
 
 
 class jobStatusMonitor:
@@ -52,9 +52,9 @@ class jobStatusMonitor:
 
         # Connecting to the server through SSH
         connection = tlscpSSH( self.credentialUsername,
-                                password=self.credentialPassword,
-                                address=self.remoteServerAddress )
-
+                                password = self.credentialPassword,
+                                address  = 'hoffman2.idre.ucla.edu')#self.remoteServerAddress )
+        
         # Accessing the current status
         connection.query( "qstat -u " + self.setUsernames[0] )
         self.curStatus = connection.getQueryResult()

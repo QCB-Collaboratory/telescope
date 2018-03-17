@@ -11,17 +11,21 @@ class tlscpSSH:
 
     def __init__(self, username, password='', address = ''):
 
-        logging.info("tlscpSSH: Connecting to server.")
+        logging.info("tlscpSSH: Setting up the client.")
 
         # Instance of the ssh client
         self.sshClient = paramiko.client.SSHClient()
 
         # Connect to the server
         self.sshClient.set_missing_host_key_policy( paramiko.client.AutoAddPolicy() )
+
+        logging.info("tlscpSSH: Connecting to server <" + address + "> ...")
+        logging.info("tlscpSSH: Using username: " + username + " ...")
         self.sshClient.connect(address, username=username,
                                         password=password,
                                         look_for_keys=True
                                 )
+        logging.info("tlscpSSH: Connected.")
 
         self.returnedText = ''
 
