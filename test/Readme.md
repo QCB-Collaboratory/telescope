@@ -56,6 +56,7 @@ Create a file called config.ini with the following content:
 ```
 [CREDENTIALS]
 USER   = <USERNAME>
+SERVER = hoffman2.idre.ucla.edu
 ```
 Finally, run
 ```shell
