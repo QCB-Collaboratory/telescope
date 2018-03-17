@@ -42,8 +42,8 @@ setup(
     packages = [ 'telescope' ],
 
     package_data = {
-        '' : ['telescope/pages/*.html',   # this makes GLOB avoid matching folders as files
-                'telescope/pages/css/*', 'telescope/pages/js/*', 'telescope/pages/fonts/*']
+        '' : ['pages/*.html',   # this makes GLOB avoid matching folders as files
+                'pages/css/*', 'pages/js/*', 'pages/fonts/*']
     },
 
     install_requires=['paramiko','tornado','configparser'],
