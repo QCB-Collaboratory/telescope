@@ -11,18 +11,18 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='FaroresWind',
+    name='Telescope',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.5.0',
 
-    description='Electronic nose',
+    description='Web application to keep track of job progress in remote servers',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/VandroiyLabs/FaroresWind',
+    url='https://github.com/QCB-Collaboratory/telescope',
 
     # Author details
     author='',
@@ -33,26 +33,20 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: GPL-3.0',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='electronic nose, sensors, MOX',
+    keywords='unix, SGE, genomics',
 
-    packages = [
-        'faroreswind',
-        'faroreswind.collector',
-        'faroreswind.server',
-        'faroreswind.client'
-    ],
+    packages = [ 'telescope' ],
 
     package_data = {
-        '' : ['server/pages/*.html',   # this makes GLOB avoid matching folders as files
-                'server/pages/css/*', 'server/pages/js/*', 'server/pages/fonts/*']
+        '' : ['telescope/pages/*.html',   # this makes GLOB avoid matching folders as files
+                'telescope/pages/css/*', 'telescope/pages/js/*', 'telescope/pages/fonts/*']
     },
 
-    install_requires=[],
+    install_requires=['paramiko','tornado','xml','configparser'],
     extras_require={},
 
 )
