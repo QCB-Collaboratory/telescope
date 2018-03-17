@@ -1,6 +1,6 @@
 ## standard libraries
 import sys, os, io
-import datetime, time
+import datetime, time, signal
 
 ## to create parallel processes
 import multiprocessing as mp
@@ -18,7 +18,6 @@ import logging
 ##
 import configparser
 
-
 ## Import internal modules
 from sshKernel import tlscpSSH
 from jobStatusMonitor import jobStatusMonitor
@@ -28,8 +27,6 @@ import utils
 import webbrowser
 
 rootdir = './'#os.path.dirname(__file__)
-
-
 
 
 class loggingHandler(tornado.web.RequestHandler):
@@ -115,27 +112,27 @@ def monitorLoop( queueMonitor ):
 
 
 
-class telescope:
+class server:
 
 
     def __init__(self):
         """ This starts the server.
         """
 
-        self.port = 4000
+        self.port = str(4000)
 
         ## Setting up the logging
         logging.basicConfig(filename='telescope_server.log',
                             level=logging.DEBUG,
                             format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
-        logger = logging.getLogger(__name__)
-        logger.info('Logging setup done.')
+        self.logger = logging.getLogger(__name__)
+        self.logger.info('Logging setup done.')
 
 
         ## Loading configuration file
         config = configparser.ConfigParser()
         config.read('config.ini')
-        logger.info('Configurations read succesfully.')
+        self.logger.info('Configurations read succesfully.')
 
 
         # Extract name of the account that will be used for log-in
@@ -147,7 +144,7 @@ class telescope:
         else:
             self.credential_password = ''
 
-        logger.info('Credentials parsed.')
+        self.logger.info('Credentials parsed.')
 
         # Create a list of the users whose jobs we'd like to examine
         self.user_names = []
@@ -157,10 +154,8 @@ class telescope:
         else:
             self.user_names.append( self.credential_username )
 
-        logger.info('Monitored users parsed.')
+        self.logger.info('Monitored users parsed.')
 
-
-        ## Starting monitor jobs
 
         # Creating a monitor object
         BaseManager.register('jobStatusMonitor', jobStatusMonitor)
@@ -169,12 +164,6 @@ class telescope:
         self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
                                                         self.credential_password,
                                                         self.user_names )
-        # Kicking the monitor job
-        monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
-        monitorLoop_process.start()
-
-
-        logger.info('Parallel status monitor started.')
 
         ## Starting tornado
 
@@ -185,32 +174,65 @@ class telescope:
                                 'queueMonitor'       : self.queueMonitor }
 
         # Setting up handlers
-        handlers = [
-            (r'/', MainHandler, handlerArguments),
-            (r'/logging', loggingHandler),
-            (r'/experiment', experimentHandler, handlerArguments),
-        ]
+        self.handlers = [
+                            (r'/', MainHandler, handlerArguments),
+                            (r'/logging', loggingHandler),
+                            (r'/experiment', experimentHandler, handlerArguments),
+                        ]
 
         # General settings
-        settings = dict(
-            static_path = os.path.join(os.path.dirname(__file__), "pages")
+        self.settings = dict(
+            static_path = os.path.join( os.path.dirname(__file__), "pages")
             )
 
-        logger.info('Tornado setup done.')
+        self.logger.info('Tornado setup done.')
+
+
+        # Set up ctrl C
+        signal.signal(signal.SIGINT, self.signal_handler)
+
+        return
+
+
+    def run(self):
+
+        # Kicking the monitor job
+        monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
+        monitorLoop_process.start()
+        self.logger.info('Parallel status monitor started.')
+
 
         # Starting tornado server loop
-        application = web.Application(handlers, **settings)
+        application = web.Application(self.handlers, **self.settings)
         application.listen(self.port)
 
-        logger.info('About to start tornado loop...')
+        print( "Starting data collection (CTRL+C to stop)" )
+
+        self.logger.info('About to start tornado loop...')
+        webbrowser.open_new_tab('http://localhost:' + self.port)
         tornado.ioloop.IOLoop.instance().start()
 
         return
 
 
+    def signal_handler(self, signal, frame):
+
+        # Printing a message on the screen
+        print( "\nStopping..." )
+
+        # Printing log
+        self.logger.info('User stopped the server...')
+        # Stopping tornado
+        tornado.ioloop.IOLoop.instance().stop()
+        # Printing log
+        self.logger.info('Tornado stopped.')
+
+        # Exiting
+        sys.exit(0)
+
+        return
 
 
 if __name__ == "__main__":
     # This will open a new tab in your default browser
-    webbrowser.open_new_tab('http://localhost:4000')
-    server = telescope()
+    instance = server()

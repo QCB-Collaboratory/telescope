@@ -19,7 +19,8 @@ from sshKernel import tlscpSSH
 import utils
 
 
-rootdir='./'
+#rootdir='./'
+rootdir=os.path.dirname(__file__)
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -84,10 +85,11 @@ class MainHandler(tornado.web.RequestHandler):
         content += '</tbody></table></div>'
 
 
-        self.render('pages/index.html', title="Farore's wind",
+        self.render(os.path.join(rootdir,"pages/index.html"), title="Farore's wind",
                     content = content,
-                    top=open(rootdir+"/pages/top.html").read(),
-                    bottom=open(rootdir+"/pages/bottom.html").read())
+                    top=open(os.path.join(rootdir,"pages/top.html")).read(),
+                    bottom=open(os.path.join(rootdir,"pages/bottom.html")).read()
+                    )
 
         return
 
