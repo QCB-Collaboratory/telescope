@@ -18,8 +18,6 @@ import jobStatusMonitor
 from sshKernel import tlscpSSH
 import utils
 
-
-#rootdir='./'
 rootdir=os.path.dirname(__file__)
 
 
@@ -28,15 +26,16 @@ class MainHandler(tornado.web.RequestHandler):
     Root access
     """
 
-    def initialize(self, credentialUsername, credentialPass = '',
-                    setUsername = [], queueMonitor = '' ):
+    def initialize(self, credentialUsername, credentialPass, remoteServerAddress
+                    setUsername, queueMonitor ):
 
         # Credentials for log in
-        self.credentialUsername = credentialUsername
-        self.credentialPassword = credentialPass
+        self.credentialUsername  = credentialUsername
+        self.credentialPassword  = credentialPass
+        self.remoteServerAddress = remoteServerAddress
 
         # Usernames to keep track of
-        self.setUsernames       = setUsername
+        self.setUsernames = setUsername
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
@@ -103,7 +102,8 @@ class MainHandler(tornado.web.RequestHandler):
         """
         commandString = "cat "
         connection = tlscpSSH( self.credentialUsername,
-                                password=self.credentialPassword )
+                                password=self.credentialPassword,
+                                address=self.remoteServerAddress )
         cmdOutput = ""
         listquery = "ls -a"
         connection.query(listquery)

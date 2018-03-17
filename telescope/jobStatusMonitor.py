@@ -13,12 +13,13 @@ import utils
 class jobStatusMonitor:
 
     def __init__(self, credentialUsername, credentialPassword,
-                    setUsernames,
+                    remoteServerAddress, setUsernames,
                     monitoringInterval = 20.):
 
-        self.credentialUsername = credentialUsername
-        self.credentialPassword = credentialPassword
-        self.setUsernames       = setUsernames
+        self.credentialUsername  = credentialUsername
+        self.credentialPassword  = credentialPassword
+        self.remoteServerAddress = remoteServerAddress
+        self.setUsernames        = setUsernames
 
         self.monitoringInterval = monitoringInterval
 
@@ -51,14 +52,12 @@ class jobStatusMonitor:
 
         # Connecting to the server through SSH
         connection = tlscpSSH( self.credentialUsername,
-                                password=self.credentialPassword )
+                                password=self.credentialPassword,
+                                address=self.remoteServerAddress )
 
         # Accessing the current status
         connection.query( "qstat -u " + self.setUsernames[0] )
         self.curStatus = connection.getQueryResult()
-
-        connection.query( "qstat -xml -u " + self.setUsernames[0] )
-        print( self.XMLparser( connection.getQueryResult() ) )
 
         # Closing the connection to the server
         connection.close()

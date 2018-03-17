@@ -91,7 +91,7 @@ class tlscpSSH:
         return self.grabFile( path2file, nlines=nlines )
 
     def grabFile(self, path2file, nlines=20, order = -1 ):
-        
+
         if order == 1:
             readCMD = "head"
         else:

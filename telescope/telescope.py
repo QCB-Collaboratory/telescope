@@ -137,6 +137,8 @@ class server:
 
         # Extract name of the account that will be used for log-in
         self.credential_username = config['CREDENTIALS']['USER']
+        # Extract the address of the server
+        self.remoteServerAddress = config['CREDENTIALS']['SERVER']
 
         # If there is a password listed, get that
         if config.has_option('CREDENTIALS', 'PASS'):
@@ -163,15 +165,17 @@ class server:
         manager.start()
         self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
                                                         self.credential_password,
+                                                        self.remoteServerAddress,
                                                         self.user_names )
 
         ## Starting tornado
 
         # Defining argument dictionary
-        handlerArguments = { 'credentialUsername' : self.credential_username,
-                                'credentialPass'     : self.credential_password,
-                                'setUsername'        : self.user_names,
-                                'queueMonitor'       : self.queueMonitor }
+        handlerArguments = { 'credentialUsername'     : self.credential_username,
+                                'credentialPass'      : self.credential_password,
+                                'setUsername'         : self.user_names,
+                                'remoteServerAddress' : self.remoteServerAddress,
+                                'queueMonitor'        : self.queueMonitorself }
 
         # Setting up handlers
         self.handlers = [

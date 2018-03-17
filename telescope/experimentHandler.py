@@ -18,22 +18,20 @@ import logging
 from sshKernel import tlscpSSH
 import utils
 
-
-rootdir='./'
-
-
+rootdir=os.path.dirname(__file__)
 
 class experimentHandler(tornado.web.RequestHandler):
 
-    def initialize(self, credentialUsername, credentialPass = '',
-                    setUsername = [], queueMonitor = '' ):
+    def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
+                        setUsername, queueMonitor ):
 
         # Credentials for log in
-        self.credentialUsername = credentialUsername
-        self.credentialPassword = credentialPass
+        self.credentialUsername  = credentialUsername
+        self.credentialPassword  = credentialPass
+        self.remoteServerAddress = remoteServerAddress
 
         # Usernames to keep track of
-        self.setUsernames       = setUsername
+        self.setUsernames = setUsername
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
@@ -59,7 +57,8 @@ class experimentHandler(tornado.web.RequestHandler):
 
             ## Connecting to the server through SSH
             connection = tlscpSSH( self.credentialUsername,
-                                    password=self.credentialPassword )
+                                    password=self.credentialPassword,
+                                    address=self.remoteServerAddress )
             connection.query( "qstat -j " + self.jobID )
             curStatJ     = connection.returnedText
             # Name of the script
