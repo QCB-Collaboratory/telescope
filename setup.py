@@ -46,7 +46,7 @@ setup(
                 'telescope/pages/css/*', 'telescope/pages/js/*', 'telescope/pages/fonts/*']
     },
 
-    install_requires=['paramiko','tornado','xml','configparser'],
+    install_requires=['paramiko','tornado','configparser'],
     extras_require={},
 
 )

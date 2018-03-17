@@ -1,12 +1,19 @@
 # telescope
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
-<img src="https://img.shields.io/badge/Python-_2.7,_3.*-brightgreen.svg">
+<img src="https://img.shields.io/badge/Python-_2.7,_and_3-brightgreen.svg">
 [<img src="https://img.shields.io/badge/gitter_-_chat_online_-blue.svg">](https://gitter.im/unix-telescope/Lobby)
 
 Telescope is an open-source web applciation that tracks the progress of jobs submitted to remote servers using Sun Grid Engine (SGE) on-demand queueing system. It allows remote scheduling of pre-defined pipelines, as well as re-schedule queued jobs. Moreover, output files are rendered in HTML, allowing the use of markdown and rich-text features. Telescope operates using SSH key pairs that are stored after encrypted, and does not allow arbitrary code execution. Also, telescope does not assume anything from the remote server, it only assumes SSH connection.
 
 This project was in great part developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018), at the [QCB Collaboratory](https://qcb.ucla.edu/collaboratory/), UCLA.
+
+## Installation
+
+The easiest way to install telescope is by using pip:
+```
+pip install git+https://github.com/QCB-Collaboratory//telescope
+```
 
 ### Dependencies
 
@@ -14,9 +21,7 @@ Telescope can be self-host and track jobs from a list of users. It runs in Pytho
 
 * paramiko
 * tornado
-* xml.etree.ElementTree
 * configparser
-
 
 
 ## License
