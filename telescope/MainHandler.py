@@ -72,7 +72,7 @@ class MainHandler(tornado.web.RequestHandler):
             content += '<tr>'
             # Parsing data from qstat
             statParserd = utils.qstatsParser( curStatus_splist[j] )
-            print(statParserd)
+            
             # Writing the info into the row
             content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
                         statParserd['jid']    + '</a></td>' + \
