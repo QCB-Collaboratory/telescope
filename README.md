@@ -1,12 +1,16 @@
-# telescope
+<img align="center" src="resources/Complete_Logo_v1.png" width=600 />
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
 <img src="https://img.shields.io/badge/Python-_2.7_and_3-brightgreen.svg">
 [<img src="https://img.shields.io/badge/gitter_-_chat_online_-blue.svg">](https://gitter.im/unix-telescope/Lobby)
 
-Telescope is an open-source web applciation that tracks the progress of jobs submitted to remote servers using Sun Grid Engine (SGE) on-demand queueing system. It allows remote scheduling of pre-defined pipelines, as well as re-schedule queued jobs. Moreover, output files are rendered in HTML, allowing  the use of markdown and rich-text features. Telescope operates using SSH key pairs that are stored after encrypted, and does not allow arbitrary code execution. Also, telescope does not assume anything from the remote server, it only assumes SSH connection.
+Telescope is an open-source web applciation that tracks the progress of jobs submitted to remote servers using Sun Grid Engine (SGE) on-demand scheduling system. It allows remote scheduling of pre-defined pipelines, as well as re-schedule queued jobs. Moreover, output files are rendered in HTML, allowing  the use of markdown and rich-text features. Telescope operates using SSH key pairs that are stored after encrypted, and does not allow arbitrary code execution. Also, telescope does not assume anything from the remote server, it only assumes SSH connection.
 
-This project was in great part developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018), at the [QCB Collaboratory](https://qcb.ucla.edu/collaboratory/), UCLA.
+<img align="right" width="150" src="resources/telescope_icon.png">
+
+This project started as an effort from the [Collaboratory](https://qcb.ucla.edu/collaboratory/), part of the Institute for Quantitative and Computational Biology (QCBio) at UCLA, and was developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018). It is currently under development by a number of people from the QCBio community and various labs. We are also working on a paper describing this system and how it can be used to help biologists leverage the power of large computational facilities.
+
+If you are interested in learning more about Telescope, or if you want to join the team to contribute, don't hesitate contacting us. There are several always to contribute!
 
 ## Quick start
 
@@ -43,12 +47,10 @@ python RunTelescope.py
 ```
 This should automatically open a web broswer with telescope.
 
-
-
 If an error message appears, you may have found a bug -- we'd appreciate if you could report it. For more details, please visit our [wiki](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) or join the conversation at [gitter](https://gitter.im/unix-telescope/Lobby).
 
 
-## Bugs and suggestions
+## Contact, bugs and suggestions
 
 If you find bugs and/or have suggestions for Telescope, please
 * [Open an issue](https://github.com/QCB-Collaboratory/telescope/issues) with a detailed description;
@@ -58,6 +60,7 @@ If you find bugs and/or have suggestions for Telescope, please
 
 Telescope can be self-host and track jobs from a list of users. It runs in Python 2.7\* or 3\*, with the following non-standard dependencies:
 
+* numpy
 * paramiko
 * tornado
 * configparser
