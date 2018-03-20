@@ -27,7 +27,7 @@ class jobStatusMonitor:
         self.runningFlag = 1
 
         # Initializing status variable
-        self.curStatus = ''
+        self.curStatusParsed = {}
 
         return
 
@@ -38,11 +38,13 @@ class jobStatusMonitor:
         """
         return self.monitoringInterval
 
+
     def getMonitorCurrentStatus(self):
         """
         Status text retrieved last time it was updated
         """
-        return self.curStatus
+        return self.curStatusParsed
+
 
     def checkQstat(self):
         """
@@ -56,19 +58,13 @@ class jobStatusMonitor:
                                 address  = self.remoteServerAddress )
 
         # Accessing the current status
-        connection.query( "qstat -u " + self.setUsernames[0] )
-        self.curStatus = connection.getQueryResult()
+        #connection.query( "qstat -u " + self.setUsernames[0] )
+        #self.curStatus = connection.getQueryResult()
+
+        connection.query( "qstat -xml -u " + self.setUsernames[0] )
+        self.curStatusParsed = utils.qstatsXMLParser( connection.getQueryResult() )
 
         # Closing the connection to the server
         connection.close()
-
-        return
-
-
-    def XMLparser(self, XMLinput):
-        print( XMLinput )
-        root = ElementTree.fromstring( XMLinput )
-        for child in root:
-            print( child.tag, child.attrib )
 
         return

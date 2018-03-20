@@ -2,7 +2,7 @@
 import sys, os, io
 import datetime, time
 import json
-
+import numpy as np
 
 ## For the web service
 import tornado.ioloop
@@ -46,13 +46,7 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        # Grabt the latest status from the servers
-        curStatus  = self.queueMonitor.getMonitorCurrentStatus()
-
         content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
-
-        # Splitting string per line
-        curStatus_splist = curStatus.split('\n')[2:]
 
         content += '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
@@ -64,23 +58,34 @@ class MainHandler(tornado.web.RequestHandler):
                     '</tr></thead>'+ \
                     '<tbody>\n'
 
-        for j in range(len(curStatus_splist)):
+        # Grabt the latest status from the servers
+        curStatus  = self.queueMonitor.getMonitorCurrentStatus()
+        # Getting number of jobs
+        numJobs = len( curStatus )
 
-            if curStatus_splist[j] == '': break
 
-            # Starting new row
-            content += '<tr>'
-            # Parsing data from qstat
-            statParserd = utils.qstatsParser( curStatus_splist[j] )
+        if numJobs > 0:
 
-            # Writing the info into the row
-            content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
-                        statParserd['jid']    + '</a></td>' + \
-                        '<td>' + statParserd['jname']  + '</td>' + \
-                        '<td>' + statParserd['jstate'] + '</td>' + \
-                        '<td>' + statParserd['date']   + '</td>'
-            ## End of row
-            content += '</tr>'
+            # Getting set of keys
+            setJobKeys = np.sort( list(curStatus.keys()) )
+
+            for jobKey in setJobKeys:
+
+                # Starting new row
+                content += '<tr>'
+                # Parsing data from qstat
+                statParserd = curStatus[jobKey]
+
+                # Writing the info into the row
+                content +=  '<td><a href="/experiment?jobID=' + str(statParserd['jid']) + '">' + \
+                            str(statParserd['jid']) + '</a></td>' + \
+                            '<td>' + statParserd['jname']  + '</td>' + \
+                            '<td>' + \
+                            utils.parseStatus2HTML( statParserd['jstate'] ) \
+                            + '</td>' + \
+                            '<td>' + statParserd['date']   + '</td>'
+                ## End of row
+                content += '</tr>'
 
         content += '</tbody></table></div>'
 

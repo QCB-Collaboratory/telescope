@@ -33,7 +33,8 @@ class loggingHandler(tornado.web.RequestHandler):
 
     def initialize(self):
 
-        self.filename = 'telescope_server.log' ### this is too hard-coded
+        self.filename   = 'telescope_server.log'
+        self.numEntries = 50
 
         return
 
@@ -49,7 +50,7 @@ class loggingHandler(tornado.web.RequestHandler):
                 '<tbody>\n'
 
 
-        for entry in logEntries[-1:-200:-1]:
+        for entry in logEntries[-1:-self.numEntries:-1]:
 
             if len( entry.split('--') ) == 2:
                 [metadata, message] = entry.split('--')
@@ -163,14 +164,14 @@ class server:
 
 
         ## SSH test --- TURN THIS SECTION INTO LOG MESSAGES
-        print(' Test connection... ')
+        self.logger.info('Testing SSH connection...')
         connection = tlscpSSH( self.credential_username,
                                 password=self.credential_password,
                                 address=self.remoteServerAddress )
-        print(' Test connection... ')
+        self.logger.info('Issuing a command through the SSH connection...')
         connection.query( "uname -a" )
-        print(' Command issued... ')
-        print(connection.returnedText)
+        self.logger.info('Response received: ' + connection.returnedText + "...")
+        self.logger.info('Finished testing SSH connection.')
 
 
         # Creating a monitor object
