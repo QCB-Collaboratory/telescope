@@ -26,7 +26,7 @@ from telescope.MainHandler import MainHandler
 from telescope.experimentHandler import experimentHandler
 import telescope.utils as utils
 
-rootdir = './'#os.path.dirname(__file__)
+rootdir=os.path.dirname(__file__)
 
 
 class loggingHandler(tornado.web.RequestHandler):
@@ -80,8 +80,11 @@ class loggingHandler(tornado.web.RequestHandler):
 
         content += '</tbody></table></div>'
 
-        self.render(rootdir+'/pages/index.html', title="Server logs", content = content,
-                    top=open(rootdir+"/pages/top.html").read(), bottom=open(rootdir+"/pages/bottom.html").read())
+        self.render( os.path.join(rootdir,"pages/index.html"),
+                    title="Telescope log", content = content,
+                    top=open( os.path.join(rootdir,"pages/top.html") ).read(),
+                    bottom=open( os.path.join(rootdir,"pages/bottom.html") ).read()
+                    )
 
         return
 

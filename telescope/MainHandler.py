@@ -72,7 +72,7 @@ class MainHandler(tornado.web.RequestHandler):
             content += '<tr>'
             # Parsing data from qstat
             statParserd = utils.qstatsParser( curStatus_splist[j] )
-            
+
             # Writing the info into the row
             content +=  '<td><a href="/experiment?jobID=' + statParserd['jid'] + '">' + \
                         statParserd['jid']    + '</a></td>' + \
@@ -85,7 +85,7 @@ class MainHandler(tornado.web.RequestHandler):
         content += '</tbody></table></div>'
 
 
-        self.render(os.path.join(rootdir,"pages/index.html"), title="Farore's wind",
+        self.render(os.path.join(rootdir,"pages/index.html"), title="Telescope server",
                     content = content,
                     top=open(os.path.join(rootdir,"pages/top.html")).read(),
                     bottom=open(os.path.join(rootdir,"pages/bottom.html")).read()
