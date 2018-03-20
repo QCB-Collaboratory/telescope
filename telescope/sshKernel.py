@@ -118,7 +118,6 @@ if __name__ == "__main__":
     userinput = input("What is your username? ")
     connection = tlscpSSH(userinput)
     qstatcommand = "qstat | grep " + userinput
-    print(qstatcommand)
     cmdOutput  = connection.query(qstatcommand)
     print( cmdOutput )
     connection.close()
