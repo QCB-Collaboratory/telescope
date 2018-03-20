@@ -159,6 +159,17 @@ class server:
         self.logger.info('Monitored users parsed.')
 
 
+        ## SSH test --- TURN THIS SECTION INTO LOG MESSAGES
+        print(' Test connection... ')
+        connection = tlscpSSH( self.credential_username,
+                                password=self.credential_password,
+                                address=self.remoteServerAddress )
+        print(' Test connection... ')
+        connection.query( "uname -a" )
+        print(' Command issued... ')
+        print(connection.returnedText)
+
+
         # Creating a monitor object
         BaseManager.register('jobStatusMonitor', jobStatusMonitor)
         manager = BaseManager()

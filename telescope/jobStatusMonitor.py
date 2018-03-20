@@ -54,7 +54,7 @@ class jobStatusMonitor:
         connection = tlscpSSH( self.credentialUsername,
                                 password = self.credentialPassword,
                                 address  = 'hoffman2.idre.ucla.edu')#self.remoteServerAddress )
-        
+
         # Accessing the current status
         connection.query( "qstat -u " + self.setUsernames[0] )
         self.curStatus = connection.getQueryResult()

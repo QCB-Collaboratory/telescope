@@ -61,7 +61,7 @@ class tlscpSSH:
 
             stdin, stdout, stderr = self.sshClient.exec_command(command)
             while not stdout.channel.exit_status_ready():
-                time.sleep(2)
+                time.sleep(0.1)
                 # Print stdout data
                 if stdout.channel.recv_ready():
                     stdin.close()
