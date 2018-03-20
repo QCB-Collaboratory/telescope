@@ -1,6 +1,7 @@
 import logging, time
 import paramiko
 import os
+from builtins import input
 
 
 class tlscpSSH:
@@ -114,7 +115,10 @@ class tlscpSSH:
 
 
 if __name__ == "__main__":
-    connection = tlscpSSH('thmosque')
-    cmdOutput  = connection.query("qstat | grep thmosque")
+    userinput = input("What is your username? ")
+    connection = tlscpSSH(userinput)
+    qstatcommand = "qstat | grep " + userinput
+    print(qstatcommand)
+    cmdOutput  = connection.query(qstatcommand)
     print( cmdOutput )
     connection.close()
