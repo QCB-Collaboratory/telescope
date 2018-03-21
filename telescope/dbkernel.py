@@ -28,6 +28,26 @@ class db:
         self.connection.close()
         return
 
+    def createTable(self):
+
+        query = "create table if not exists "
+        query += "jobs("
+        query += "jobId INTEGER PRIMARY KEY,"
+        query += "jobName TEXT,"
+        query += "user VARCHAR(30), status INTEGER,"
+        query += "path TEXT, command TEXT, sourceDirectory TEXT, outpath TEXT,"
+        query += "memoryRequested TEXT, currentMemory INTEGER, maximumMemory INTEGER,"
+        query += "parallel INTEGER, cores INTEGER,"
+        query += "clusterNode TEXT,"
+        query += "timeAdded VARCHAR(30), runTime TEXT, timeRemaining TEXT,"
+        query += "finalRunTime TEXT,"
+        query += "finalStatus TEXT"
+        query += ");"
+
+        self.query( query )
+
+        return
+
 
     ## customized queries
     def insertJob(self, jobId, jobName, user, status, path):
@@ -38,12 +58,20 @@ class db:
 
         return
 
+    ## customized queries
+    def checkJob(self, jobId):
+
+        query = "SELECT jobId FROM jobs WHERE jobId = "+str(jobId)
+        curr = self.query( query )
+
+        if( curr.fetchone() ):
+            return True
+        else:
+            return False
 
 if __name__ == "__main__":
 
         db = db( "telescopedb")
 
         cur = db.query("select * from jobs")
-        db.insertJob('2', 'test', 'username','1', '/home/user')
-        v = cur.fetchone()
-        print(v[0],",",v[1],",")
+        print (db.checkJob('2'))

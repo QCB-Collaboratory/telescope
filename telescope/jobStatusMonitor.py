@@ -1,6 +1,7 @@
 ## standard libraries
 import sys, os, io
 import datetime, time
+import numpy as np
 
 ## XML parser for qstat outputs
 import xml.etree.ElementTree as ElementTree
@@ -8,13 +9,14 @@ import xml.etree.ElementTree as ElementTree
 ## Import internal modules
 from telescope.sshKernel import tlscpSSH
 import telescope.utils as utils
+from telescope.dbKernel import db
 
 
 class jobStatusMonitor:
 
     def __init__(self, credentialUsername, credentialPassword,
                     remoteServerAddress, setUsernames,
-                    monitoringInterval = 20.):
+                    monitoringInterval = 20., configDatabase="./telescopedb"):
 
         self.credentialUsername  = credentialUsername
         self.credentialPassword  = credentialPassword
@@ -23,6 +25,7 @@ class jobStatusMonitor:
 
         self.monitoringInterval = monitoringInterval
 
+        self.configDatabase = configDatabase
 
         self.runningFlag = 1
 
@@ -66,5 +69,35 @@ class jobStatusMonitor:
 
         # Closing the connection to the server
         connection.close()
+
+        # Getting number of jobs
+        numJobs = len( self.curStatusParsed )
+
+        if numJobs > 0:
+
+            self.db = db( self.configDatabase )
+
+            # Getting set of keys
+            setJobKeys = np.sort( list(self.curStatusParsed.keys()) )
+
+            for jobKey in setJobKeys:
+
+                # Parsing data from qstat
+                statParserd = self.curStatusParsed[jobKey]
+
+                # checking if job is not in the database
+                if( not self.db.checkJob(statParserd['jid'])):
+
+                    if( str(statParserd['jstate']) == "running" ):
+                        status = 2
+                    elif( str(statParserd['jstate']) == "queued" ):
+                        status = 1
+                    else:
+                        status = 0
+
+                    self.db.insertJob( str(statParserd['jid']), str(statParserd['jname']), "user", str(status), "path" )
+
+            self.db.close()
+
 
         return

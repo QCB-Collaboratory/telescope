@@ -17,7 +17,7 @@ currentMemory INTEGER,        -- Memory currently in use by job
 maximumMemory INTEGER,        -- Maximum memory used so far in job's history
 clusterNode TEXT,             -- Node on which job was run
 finalRunTime TEXT,            -- For finished jobs, how long did they run?
-howEnded TEXT                 -- How did the job end? Completed, killed by user, killed by Hoffman, aborted?
+finalStatus TEXT                 -- How did the job end? Completed, killed by user, killed by Hoffman, aborted?
 );
 
 --insert into jobs (jobId, jobName, user, status, path) values (1, 'test', 'username,'1', '/home/username');
