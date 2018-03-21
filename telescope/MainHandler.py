@@ -27,7 +27,7 @@ class MainHandler(tornado.web.RequestHandler):
     """
 
     def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
-                    setUsername, queueMonitor ):
+                    setUsername, setUsername_str, queueMonitor ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
@@ -35,7 +35,8 @@ class MainHandler(tornado.web.RequestHandler):
         self.remoteServerAddress = remoteServerAddress
 
         # Usernames to keep track of
-        self.setUsernames = setUsername
+        self.setUsernames     = setUsername
+        self.setUsernames_str = setUsername_str
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
@@ -52,6 +53,7 @@ class MainHandler(tornado.web.RequestHandler):
                     '<table class="table table-striped">' + \
                     '<thead><tr>' + \
                     '<th width=100px>Job ID</th>' + \
+                    '<th width=100px>User</th>' + \
                     '<th>Job name</th>' + \
                     '<th>state</th>' + \
                     '<th>Started in</th>' + \
@@ -79,6 +81,7 @@ class MainHandler(tornado.web.RequestHandler):
                 # Writing the info into the row
                 content +=  '<td><a href="/experiment?jobID=' + str(statParserd['jid']) + '">' + \
                             str(statParserd['jid']) + '</a></td>' + \
+                            '<td>' + statParserd['username'][:8]  + '</td>' + \
                             '<td>' + statParserd['jname']  + '</td>' + \
                             '<td>' + \
                             utils.parseStatus2HTML( statParserd['jstate'] ) \

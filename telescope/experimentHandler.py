@@ -23,7 +23,7 @@ rootdir=os.path.dirname(__file__)
 class experimentHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
-                        setUsername, queueMonitor ):
+                        setUsername, setUsername_str, queueMonitor ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
@@ -31,7 +31,8 @@ class experimentHandler(tornado.web.RequestHandler):
         self.remoteServerAddress = remoteServerAddress
 
         # Usernames to keep track of
-        self.setUsernames = setUsername
+        self.setUsernames     = setUsername
+        self.setUsernames_str = setUsername_str
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor

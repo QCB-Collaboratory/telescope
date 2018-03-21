@@ -15,13 +15,14 @@ from telescope.dbKernel import db
 class jobStatusMonitor:
 
     def __init__(self, credentialUsername, credentialPassword,
-                    remoteServerAddress, setUsernames,
+                    remoteServerAddress, setUsernames, setUsernames_str,
                     monitoringInterval = 20., configDatabase="./telescopedb"):
 
         self.credentialUsername  = credentialUsername
         self.credentialPassword  = credentialPassword
         self.remoteServerAddress = remoteServerAddress
         self.setUsernames        = setUsernames
+        self.setUsernames_str    = setUsernames_str
 
         self.monitoringInterval = monitoringInterval
 
@@ -64,7 +65,7 @@ class jobStatusMonitor:
         #connection.query( "qstat -u " + self.setUsernames[0] )
         #self.curStatus = connection.getQueryResult()
 
-        connection.query( "qstat -xml -u " + self.setUsernames[0] )
+        connection.query( "qstat -xml -u " + self.setUsernames_str )
         self.curStatusParsed = utils.qstatsXMLParser( connection.getQueryResult() )
 
         # Closing the connection to the server

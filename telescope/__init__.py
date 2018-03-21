@@ -161,9 +161,12 @@ class server:
 
         # Create a list of the users whose jobs we'd like to examine
         self.user_names = []
-        if config.has_option('MONITOR', 'NUMUSERS') and ( config['MONITOR']['NUMUSERS'] > 0 ):
-            for ii in range(int(config['MONITOR']['NUMUSERS'])):
+        if config.has_option('MONITOR', 'NUMUSERS') and ( int(config['MONITOR']['NUMUSERS']) > 0 ):
+            for ii in range( int(config['MONITOR']['NUMUSERS']) ):
                 self.user_names.append(config['MONITOR']['USER'+str(ii)])
+
+            self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
+
         else:
             self.user_names.append( self.credential_username )
 
@@ -188,7 +191,8 @@ class server:
         self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
                                                         self.credential_password,
                                                         self.remoteServerAddress,
-                                                        self.user_names, configDatabase=self.configuration_database )
+                                                        self.user_names,
+                                                        self.user_names_str, configDatabase=self.configuration_database )
 
         ## Starting tornado
 
@@ -196,6 +200,7 @@ class server:
         handlerArguments = { 'credentialUsername'     : self.credential_username,
                                 'credentialPass'      : self.credential_password,
                                 'setUsername'         : self.user_names,
+                                'setUsername_str'     : self.user_names_str,
                                 'remoteServerAddress' : self.remoteServerAddress,
                                 'queueMonitor'        : self.queueMonitor }
 
