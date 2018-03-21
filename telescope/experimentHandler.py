@@ -16,6 +16,7 @@ import logging
 
 ## Import internal modules
 from telescope.sshKernel import tlscpSSH
+from telescope.dbKernel import db
 import telescope.utils as utils
 
 rootdir=os.path.dirname(__file__)
@@ -80,14 +81,29 @@ class experimentHandler(tornado.web.RequestHandler):
                 else:
                     numLines = 20
 
-                curOutput  = connection.grabStdOut( sgeJobName, self.jobID,
-                                                    sgeOWorkDir, nlines=numLines )
-
-                curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
-                                                    sgeOWorkDir, nlines=numLines )
 
                 scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
-                                                    nlines=20, order=1 )
+                                        nlines=20, order=1 )
+
+                if statParserd['jstate'] == 'running' :
+
+                    db_ = db( './telescopedb' )
+                    dbJobInfo = db_.getbyjobId( int(self.jobID) )
+                    db_.close()
+
+                    curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
+                                                        sgeOWorkDir, nlines=numLines )
+
+                    outputPath = sgeOWorkDir + '/' + dbJobInfo[int(self.jobID)]['outpath']
+
+                    curOutput = connection.grabFile(outputPath, nlines=20, order=1 )
+
+                else:
+
+                    curOutput = None
+                    curErrMsg = None
+
+
 
                 connection.close()
 
@@ -151,24 +167,24 @@ class experimentHandler(tornado.web.RequestHandler):
         content += "<h3>Content of the script file:</h3>"
         content += "<blockquote>" + scriptContent.replace('\n', '<br />') + "</blockquote>"
 
+        if catStat != None:
+            if self.outputStatus == '1':
+                content += "<h3>Current status of the output</h3>"
+                #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+            else:
+                content += "<h3>Current status of the output (last 20 lines)</h3>"
+                #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
 
-        if self.outputStatus == '1':
-            content += "<h3>Current status of the output</h3>"
-            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
-        else:
-            content += "<h3>Current status of the output (last 20 lines)</h3>"
-            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
+            content += "<blockquote>" + catStat.replace('\n', '<br />') + "</blockquote>"
 
-        content += "<blockquote>" + catStat.replace('\n', '<br />') + "</blockquote>"
+        if catErrm != None:
+            if self.outputStatus == '1':
+                content += "<h3>Error messages:</h3>"
+                #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
+            else:
+                content += "<h3>Error messages (last 20 lines):</h3>"
+                #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
 
-
-        if self.outputStatus == '1':
-            content += "<h3>Error messages:</h3>"
-            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=0\">here</a> to see the only the last 20 lines of the output file.</p>"
-        else:
-            content += "<h3>Error messages (last 20 lines):</h3>"
-            #content += "<p>Click <a href=\"./experiment?expID=1&outputFormat=1\">here</a> to see the full output file.</p>"
-
-        content += "<blockquote>" + catErrm.replace('\n', '<br />') + "</blockquote>"
+            content += "<blockquote>" + catErrm.replace('\n', '<br />') + "</blockquote>"
 
         return content
