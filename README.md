@@ -8,19 +8,21 @@ Telescope is an open-source web applciation that tracks the progress of jobs sub
 
 <img align="right" width="150" src="resources/telescope_icon.png">
 
-This project started as an effort from the [Collaboratory](https://qcb.ucla.edu/collaboratory/), part of the Institute for Quantitative and Computational Biology (QCBio) at UCLA, and was developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018). It is currently under development by a number of people from the QCBio community and various labs. We are also working on a paper describing this system and how it can be used to help biologists leverage the power of large computational facilities.
+This project started as an effort from the [Collaboratory](https://qcb.ucla.edu/collaboratory/), a unit within the Institute for Quantitative and Computational Biology (QCBio) at UCLA, and was developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018). It is currently under development by a number of people from the QCBio community and various other labs. We are also working on a paper describing this system and how it can be used to help biologists to leverage the power of large computational facilities in a user friendly manner.
 
-If you are interested in learning more about Telescope, or if you want to join the team to contribute, don't hesitate contacting us. There are several always to contribute!
+If you are interested in learning more about Telescope, or if you want to join the team to contribute, don't hesitate in contacting us. There are several always to contribute!
+
+Please check out the [Documentation](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) portion of our Wiki for more descriptions of the software and details about the installation and running of Telescope.
 
 ## Quick start
 
-There are very few steps necessary to get started with Telescope. For a step-by-step tutorial, [click here](https://github.com/QCB-Collaboratory/telescope/blob/master/test/Readme.md).
+There are very few steps necessary to get started with Telescope. For a step-by-step tutorial, [click here](https://github.com/QCB-Collaboratory/telescope/blob/master/test/Readme.md) or [here](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation).
 
 ### Installation
 
-The easiest way to install telescope is by using pip:
+The easiest way to install telescope is by using ```pip```:
 ```
-pip install git+https://github.com/QCB-Collaboratory//telescope
+pip install git+https://github.com/QCB-Collaboratory/telescope
 ```
 
 ### Running
@@ -31,21 +33,26 @@ Starting with the configuration file, create a new file called ```config.ini``` 
 ```
 [CREDENTIALS]
 USER   = <USERNAME>
-PASS   = <PASSWORD>
 SERVER = <SERVER ADDRESS>
+
+[MONITOR]
+NUMUSERS = 1
+USER1 = <USERNAME>
 ```
-The password field is not necessary if you use a ssh key to connect to the remote server (recommended). Then, create another file called ```RunTelescope.py``` with the following content:
+T
+he password field is not necessary if you use a ssh key to connect to the remote server (*highly* recommended). Then, create another file called ```RunTelescope.py``` with the following content (note: there is a copy in the test directory of the Telescope repo):
 ```Python
 import telescope
 
 server = telescope.server()
 server.run()
 ```
+
 Finally, run this python script:
 ```
 python RunTelescope.py
 ```
-This should automatically open a web broswer with telescope.
+This should automatically open a web broswer with telescope running. More details about ```RunTelescope.py``` can be found in the [Documentation](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) portion of the wiki.
 
 If an error message appears, you may have found a bug -- we'd appreciate if you could report it. For more details, please visit our [wiki](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) or join the conversation at [gitter](https://gitter.im/unix-telescope/Lobby).
 
@@ -58,12 +65,14 @@ If you find bugs and/or have suggestions for Telescope, please
 
 ## Dependencies
 
-Telescope can be self-host and track jobs from a list of users. It runs in Python 2.7\* or 3\*, with the following non-standard dependencies:
+Telescope can be self-hosted and track jobs from a list of users. It runs in Python 2.7\* or 3\*, with the following non-standard dependencies:
 
 * numpy
 * paramiko
 * tornado
 * configparser
+
+These dependencies will automatically be installed if Telescope is installed using ```pip```.
 
 ## License
 
