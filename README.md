@@ -72,10 +72,10 @@ If you find bugs and/or have suggestions for Telescope, please
 
 Telescope can be self-hosted and track jobs from a list of users. It runs in Python 2.7\* or 3\*, with the following non-standard dependencies:
 
-* [numpy](http://www.numpy.org))
-* [paramiko](http://www.paramiko.org))
-* [tornado](http://www.tornadoweb.org/en/stable/))
-* [configparser](https://docs.python.org/3/library/configparser.html))
+* [numpy](http://www.numpy.org)
+* [paramiko](http://www.paramiko.org)
+* [tornado](http://www.tornadoweb.org/en/stable/)
+* [configparser](https://docs.python.org/3/library/configparser.html)
 
 These dependencies will automatically be installed if Telescope is installed using ```pip```.
 
