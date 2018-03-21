@@ -10,7 +10,7 @@ Telescope is an open-source web applciation that tracks the progress of jobs sub
 
 This project started as an effort from the [Collaboratory](https://qcb.ucla.edu/collaboratory/), a unit within the Institute for Quantitative and Computational Biology (QCBio) at UCLA, and was developed during the [Winter Python Hackathon](https://github.com/QCB-Collaboratory/Python-Hackathon-Winter2018). It is currently under development by a number of people from the QCBio community and various other labs. We are also working on a paper describing this system and how it can be used to help biologists to leverage the power of large computational facilities in a user friendly manner.
 
-If you are interested in learning more about Telescope, or if you want to join the team to contribute, don't hesitate in contacting us. There are several always to contribute!
+If you are interested in learning more about Telescope, or if you want to join the team to contribute, [don't hesitate in contacting us](https://github.com/QCB-Collaboratory/telescope#contact-bugs-and-suggestions). There are several ways to contribute!
 
 Please check out the [Documentation](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation) portion of our Wiki for more descriptions of the software and details about the installation and running of Telescope.
 
@@ -72,10 +72,10 @@ If you find bugs and/or have suggestions for Telescope, please
 
 Telescope can be self-hosted and track jobs from a list of users. It runs in Python 2.7\* or 3\*, with the following non-standard dependencies:
 
-* numpy ([link](http://www.numpy.org))
-* paramiko ([link](http://www.paramiko.org))
-* tornado ([link](http://www.tornadoweb.org/en/stable/))
-* configparser ([link](https://docs.python.org/3/library/configparser.html))
+* [numpy](http://www.numpy.org))
+* [paramiko](http://www.paramiko.org))
+* [tornado](http://www.tornadoweb.org/en/stable/))
+* [configparser](https://docs.python.org/3/library/configparser.html))
 
 These dependencies will automatically be installed if Telescope is installed using ```pip```.
 
