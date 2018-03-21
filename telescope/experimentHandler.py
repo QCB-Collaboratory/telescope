@@ -47,53 +47,61 @@ class experimentHandler(tornado.web.RequestHandler):
 
         if self.jobID == '-1':
             content = "<p>Experiment ID not provided.</p>"
+            content += "<script>window.location.href = \"./\";</script>"
 
         else:
 
             # Grabt the latest status from the servers
-            curStatus  = self.queueMonitor.getMonitorCurrentStatus().split('\n')
-            curStatus = [ s for s in curStatus if self.jobID in s ][0]
-            statParserd = utils.qstatsParser( curStatus )
+            curStatus  = self.queueMonitor.getMonitorCurrentStatus()
 
-            ## Connecting to the server through SSH
-            connection = tlscpSSH( self.credentialUsername,
-                                    password=self.credentialPassword,
-                                    address=self.remoteServerAddress )
-            connection.query( "qstat -j " + self.jobID )
-            curStatJ     = connection.returnedText
-            # Name of the script
-            sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
-            # Working directory
-            sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
-            # Capturing Job Name -- if job name is too long, qstat only shows
-            # the beginning of the job name. This ensures we get the full name.
-            sgeJobName   = curStatJ.split( 'job_name:' )[1].split('\n')[0].replace(' ','')
+            if int(self.jobID) in curStatus.keys():
 
-            ## Accessing the current output
-            if self.outputStatus == '1':
-                numLines = 200  ## cap in 200 lines!
+                # Getting the specific line of the qstatus
+                statParserd = curStatus[ int(self.jobID) ]
+
+                ## Connecting to the server through SSH
+                connection = tlscpSSH( self.credentialUsername,
+                                        password=self.credentialPassword,
+                                        address=self.remoteServerAddress )
+                connection.query( "qstat -j " + self.jobID )
+                curStatJ     = connection.returnedText
+                # Name of the script
+                sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
+                # Working directory
+                sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
+                # Capturing Job Name -- if job name is too long, qstat only shows
+                # the beginning of the job name. This ensures we get the full name.
+                sgeJobName   = curStatJ.split( 'job_name:' )[1].split('\n')[0].replace(' ','')
+
+                ## Accessing the current output
+                if self.outputStatus == '1':
+                    numLines = 200  ## cap in 200 lines!
+                else:
+                    numLines = 20
+
+                curOutput  = connection.grabStdOut( sgeJobName, self.jobID,
+                                                    sgeOWorkDir, nlines=numLines )
+
+                curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
+                                                    sgeOWorkDir, nlines=numLines )
+
+                scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
+                                                    nlines=20, order=1 )
+
+                connection.close()
+
+                ## Constructing the info to post on the web page
+                content = self.constructContent( qstat = curStatus, qstat_parsed=statParserd,
+                                                 catStat = curOutput,
+                                                 catErrm = curErrMsg,
+                                                 workDir = sgeOWorkDir,
+                                                 scriptName = sgeScriptRun,
+                                                 scriptContent = scriptContent
+                                                )
             else:
-                numLines = 20
 
-            curOutput  = connection.grabStdOut( sgeJobName, self.jobID,
-                                                sgeOWorkDir, nlines=numLines )
+                content = "<script>window.location.href = \"./\";</script>"
 
-            curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
-                                                sgeOWorkDir, nlines=numLines )
-
-            scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
-                                                nlines=20, order=1 )
-
-            connection.close()
-
-            ## Constructing the info to post on the web page
-            content = self.constructContent( qstat = curStatus, qstat_parsed=statParserd,
-                                             catStat = curOutput,
-                                             catErrm = curErrMsg,
-                                             workDir = sgeOWorkDir,
-                                             scriptName = sgeScriptRun,
-                                             scriptContent = scriptContent
-                                            )
 
 
         ## Rendering the page
@@ -127,8 +135,8 @@ class experimentHandler(tornado.web.RequestHandler):
         # Starting new row
         content += '<tr>'
         # Writing the info into the row
-        content +=  '<td><a href="/experiment?jobID=' + qstat_parsed['jid'] + '">' + \
-                    qstat_parsed['jid']    + '</a></td>' + \
+        content +=  '<td><a href="/experiment?jobID=' + str(qstat_parsed['jid']) + '">' + \
+                    str(qstat_parsed['jid']) + '</a></td>' + \
                     '<td>' + qstat_parsed['jname']  + '</td>' + \
                     '<td>' + qstat_parsed['jstate'] + '</td>' + \
                     '<td>' + qstat_parsed['date']   + '</td>'
