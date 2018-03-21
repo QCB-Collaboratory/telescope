@@ -50,10 +50,11 @@ class db:
 
 
     ## customized queries
-    def insertJob(self, jobId, jobName, user, status, path):
+    def insertJob(self, jobId, jobName, user, status, path, outpath):
 
-        query = "INSERT INTO jobs (jobId, jobName, user, status, path)"
-        query += " VALUES ("+jobId+",'"+jobName+"','"+user+"',"+status+",'"+path+"');"
+        query = "INSERT INTO jobs (jobId, jobName, user, status, path, outpath)"
+        query += " VALUES ("+jobId+",'"+jobName+"','"+user+"',"+status
+        query += ",'"+path+"','"+outpath+"');"
         self.query( query )
 
         return

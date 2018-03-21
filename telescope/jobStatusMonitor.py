@@ -68,9 +68,6 @@ class jobStatusMonitor:
         connection.query( "qstat -xml -u " + self.setUsernames_str )
         self.curStatusParsed = utils.qstatsXMLParser( connection.getQueryResult() )
 
-        # Closing the connection to the server
-        connection.close()
-
         # Getting number of jobs
         numJobs = len( self.curStatusParsed )
 
@@ -86,8 +83,8 @@ class jobStatusMonitor:
                 # Parsing data from qstat
                 statParserd = self.curStatusParsed[jobKey]
 
-                # checking if job is not in the database
-                if( not self.db.checkJob(statParserd['jid'])):
+                # checking if job is not in the database yet
+                if( not self.db.checkJob( statParserd['jid'] ) ):
 
                     if( str(statParserd['jstate']) == "running" ):
                         status = 2
@@ -96,9 +93,33 @@ class jobStatusMonitor:
                     else:
                         status = 0
 
-                    self.db.insertJob( str(statParserd['jid']), str(statParserd['jname']), str(statParserd['username']), str(status), "path" )
+                    connection.query( "qstat -j " + str(statParserd['jid']) )
+                    curStatJ     = connection.returnedText
+                    sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
+                    sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
+
+                    ## Figuring out the output path
+                    # Standard SGE output
+                    outpath = statParserd['jname'] + ".o" + str(statParserd['jid'])
+                    # Checking for custom output path
+                    command =  "cat " + os.path.join(sgeOWorkDir,sgeScriptRun)
+                    command += " | grep TELESCOPE-WATCH-OUTPUT:"
+                    connection.query( command )
+                    curStatJ = connection.returnedText
+                    if "TELESCOPE-WATCH-OUTPUT:" in curStatJ:
+                        outpath = curStatJ.split("TELESCOPE-WATCH-OUTPUT:")[1].strip(' \t\n\r')
+
+                    ## Inserting data about the job into the database
+                    self.db.insertJob( str(statParserd['jid']),
+                                        str(statParserd['jname']),
+                                        str(statParserd['username']),
+                                        str(status),
+                                        sgeOWorkDir,
+                                        outpath )
 
             self.db.close()
 
+        # Closing the connection to the server
+        connection.close()
 
         return

@@ -120,11 +120,11 @@ def monitorLoop( queueMonitor ):
 class server:
 
 
-    def __init__(self):
+    def __init__(self, port = 4000):
         """ This starts the server.
         """
 
-        self.port = str(4000)
+        self.port = str( port )
 
         ## Setting up the logging
         logging.basicConfig(filename='telescope_server.log',
@@ -153,9 +153,9 @@ class server:
 
         # If there is a database listed, get that
         if config.has_option('CONFIGURATION', 'DATABASE'):
-            self.configuration_database = config['CONFIGURATION']['DATABASE']
+            self.database_path = config['CONFIGURATION']['DATABASE']
         else:
-            self.configuration_database = './telescopedb'
+            self.database_path = './telescopedb'
 
         self.logger.info('Credentials parsed.')
 
@@ -167,12 +167,22 @@ class server:
 
         else:
             self.user_names.append( self.credential_username )
-        
+
         self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
         self.logger.info('Monitored users parsed.')
 
 
-        ## SSH test --- TURN THIS SECTION INTO LOG MESSAGES
+        ## Databse
+        # Access the saved database. If it does not exists,
+        # the database is created
+        self.logger.info('Setting up the database...')
+        self.db = db( self.database_path )
+        self.db.createTable()
+        self.db.close()
+        self.logger.info('Database created.')
+
+
+        ## Testing SSH connection
         self.logger.info('Testing SSH connection...')
         connection = tlscpSSH( self.credential_username,
                                 password=self.credential_password,
@@ -191,7 +201,7 @@ class server:
                                                         self.credential_password,
                                                         self.remoteServerAddress,
                                                         self.user_names,
-                                                        self.user_names_str, configDatabase=self.configuration_database )
+                                                        self.user_names_str, configDatabase=self.database_path )
 
         ## Starting tornado
 
@@ -220,14 +230,6 @@ class server:
 
         # Set up ctrl C
         signal.signal(signal.SIGINT, self.signal_handler)
-
-
-
-
-        # Creates database table if not exists
-        self.db = db( self.configuration_database )
-        self.db.createTable()
-        self.db.close()
 
         return
 
