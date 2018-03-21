@@ -96,7 +96,7 @@ class jobStatusMonitor:
                     else:
                         status = 0
 
-                    self.db.insertJob( str(statParserd['jid']), str(statParserd['jname']), "user", str(status), "path" )
+                    self.db.insertJob( str(statParserd['jid']), str(statParserd['jname']), str(statParserd['username']), str(status), "path" )
 
             self.db.close()
 

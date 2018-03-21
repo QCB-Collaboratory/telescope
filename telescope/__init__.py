@@ -165,11 +165,10 @@ class server:
             for ii in range( int(config['MONITOR']['NUMUSERS']) ):
                 self.user_names.append(config['MONITOR']['USER'+str(ii)])
 
-            self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
-
         else:
             self.user_names.append( self.credential_username )
-
+        
+        self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
         self.logger.info('Monitored users parsed.')
 
 

@@ -69,9 +69,24 @@ class db:
         else:
             return False
 
+    def getbyjobId(self, jobId):
+
+        query = "SELECT * FROM jobs WHERE jobId = " + str(jobId)
+
+        return self.query( query ).fetchone()
+
+
+    def getbyUser(self, user):
+
+        query = "SELECT * FROM jobs WHERE user = " + str(user) + " ORDER by jobId"
+
+        return self.query( query ).fetchall()
+
+
+
 if __name__ == "__main__":
 
         db = db( "telescopedb")
 
-        cur = db.query("select * from jobs")
-        print (db.checkJob('2'))
+        cur = db.getbyUser('user')
+        print (cur)
