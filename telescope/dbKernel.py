@@ -71,14 +71,14 @@ class db:
 
     def getbyjobId(self, jobId):
 
-        query = "SELECT * FROM jobs WHERE jobId = " + str(jobId)
+        query = "SELECT * FROM jobs WHERE status = 2 and jobId = " + str(jobId)
 
         return self.query( query ).fetchone()
 
 
     def getbyUser(self, user):
 
-        query = "SELECT * FROM jobs WHERE user = " + str(user) + " ORDER by jobId"
+        query = "SELECT * FROM jobs WHERE status = 2 and user = " + str(user) + " ORDER by jobId"
 
         return self.query( query ).fetchall()
 
