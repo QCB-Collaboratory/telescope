@@ -35,6 +35,9 @@ Once installed, you will need two files to run Telescope: (i) a configuration fi
 USER   = <USERNAME>
 SERVER = <SERVER ADDRESS>
 
+[CONFIGURATION]
+DATABASE= <DATABASE NAME>
+
 [MONITOR]
 NUMUSERS = 1
 USER1 = <USERNAME>
