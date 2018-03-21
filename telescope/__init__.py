@@ -151,6 +151,12 @@ class server:
         else:
             self.credential_password = ''
 
+        # If there is a database listed, get that
+        if config.has_option('CONFIGURATION', 'DATABASE'):
+            self.configuration_database = config['CONFIGURATION']['DATABASE']
+        else:
+            self.configuration_database = './telescopedb'
+
         self.logger.info('Credentials parsed.')
 
         # Create a list of the users whose jobs we'd like to examine
@@ -182,7 +188,7 @@ class server:
         self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
                                                         self.credential_password,
                                                         self.remoteServerAddress,
-                                                        self.user_names )
+                                                        self.user_names, configDatabase=self.configuration_database )
 
         ## Starting tornado
 
@@ -212,11 +218,7 @@ class server:
         signal.signal(signal.SIGINT, self.signal_handler)
 
 
-        # If there is a database listed, get that
-        if config.has_option('CONFIGURATION', 'DATABASE'):
-            self.configuration_database = config['CONFIGURATION']['DATABASE']
-        else:
-            self.configuration_database = './telescopedb'
+
 
         # Creates database table if not exists
         self.db = db( self.configuration_database )
