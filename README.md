@@ -29,7 +29,7 @@ pip install git+https://github.com/QCB-Collaboratory/telescope
 
 Once installed, you will need two files to run Telescope: (i) a configuration file that defines your user's credentials and server address, and (ii) a small python script that starts the server.
 
-Starting with the configuration file, create a new file called ```config.ini``` with the following content:
+1) Create a new file called ```config.ini``` with the following content:
 ```
 [CREDENTIALS]
 USER   = <USERNAME>
@@ -39,8 +39,10 @@ SERVER = <SERVER ADDRESS>
 NUMUSERS = 1
 USER1 = <USERNAME>
 ```
-T
-he password field is not necessary if you use a ssh key to connect to the remote server (*highly* recommended). Then, create another file called ```RunTelescope.py``` with the following content (note: there is a copy in the test directory of the Telescope repo):
+
+The password field is not necessary if you use a ssh key to connect to the remote server (*highly* recommended). Make sure to keep this ```config.ini``` in your current directory, unless you'd like to customize the path as described in the Wiki.
+
+2) Then, create another file called ```RunTelescope.py``` with the following content (note: there is a copy in the test directory of the Telescope repo):
 ```Python
 import telescope
 
