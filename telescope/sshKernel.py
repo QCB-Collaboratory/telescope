@@ -1,7 +1,10 @@
 import logging, time
-import paramiko
 import os
 from builtins import input
+
+# TODO: allow the user to configure which plugin to use
+from ansible.plugins.connection import ssh as plugin
+from ansible.playbook.play_context import PlayContext
 
 
 class tlscpSSH:
@@ -15,18 +18,16 @@ class tlscpSSH:
         logging.info("tlscpSSH: Setting up the client.")
 
         # Instance of the ssh client
-        self.sshClient = paramiko.client.SSHClient()
+        ctx = PlayContext()
+        ctx.remote_user = username
+        ctx.password = password
+        ctx.remote_addr = address
+        self.sshClient = plugin.Connection(ctx, None)
 
-        # Connect to the server
-        self.sshClient.set_missing_host_key_policy( paramiko.client.AutoAddPolicy() )
+        # TODO: manipulate ConfigManager to set C.HOST_KEY_CHECKING to False
 
         logging.info("tlscpSSH: Connecting to server <" + address + "> ...")
         logging.info("tlscpSSH: Using username: " + username + " ...")
-        self.sshClient.connect(address, username=username,
-                                        password=password,
-                                        look_for_keys=True
-                                )
-        logging.info("tlscpSSH: Connected.")
 
         self.returnedText = ''
 
@@ -60,26 +61,9 @@ class tlscpSSH:
 
             self.returnedText = ''
 
-            stdin, stdout, stderr = self.sshClient.exec_command(command)
-            while not stdout.channel.exit_status_ready():
-                time.sleep(0.1)
-                # Print stdout data
-                if stdout.channel.recv_ready():
-                    stdin.close()
-                    std_out = stdout.readlines()
-                    self.returnedText = ''.join(std_out)
-                    return 1
-
-                    # the method below, although recommended in the docs,
-                    # is returning intermitent Nones...
-                    # alldata = stdout.channel.recv(1024)
-                    # while stdout.channel.recv_ready():
-                    #     alldata += stdout.channel.recv(1024)
-                    #
-                    # # Print as string with utf8 encoding
-                    # string = str(alldata).encode("utf-8")
-                    # return string
-
+            returncode, stdout, stderr = self.sshClient.exec_command(command)
+            self.returnedText = stdout
+            return 1
         else:
             return "No connection."
 
@@ -96,6 +80,7 @@ class tlscpSSH:
         return self.grabFile( path2file, nlines=nlines )
 
     def grabFile(self, path2file, nlines=20, order = -1 ):
+        # TODO: use self.sshClient.fetch_file
 
         if order == 1:
             readCMD = "head"
