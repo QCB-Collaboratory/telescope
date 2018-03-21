@@ -25,6 +25,7 @@ from telescope.jobStatusMonitor import jobStatusMonitor
 from telescope.MainHandler import MainHandler
 from telescope.experimentHandler import experimentHandler
 import telescope.utils as utils
+from telescope.dbKernel import db
 
 rootdir=os.path.dirname(__file__)
 
@@ -209,6 +210,18 @@ class server:
 
         # Set up ctrl C
         signal.signal(signal.SIGINT, self.signal_handler)
+
+
+        # If there is a database listed, get that
+        if config.has_option('CONFIGURATION', 'DATABASE'):
+            self.configuration_database = config['CONFIGURATION']['DATABASE']
+        else:
+            self.configuration_database = './telescopedb'
+
+        # Creates database table if not exists
+        self.db = db( self.configuration_database )
+        self.db.createTable()
+        self.db.close()
 
         return
 
