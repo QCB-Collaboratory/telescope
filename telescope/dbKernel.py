@@ -74,14 +74,72 @@ class db:
 
         query = "SELECT * FROM jobs WHERE status = 2 and jobId = " + str(jobId)
 
-        return self.query( query ).fetchone()
+        row = self.query( query ).fetchone()
+
+        return self.rowParser(row)
 
 
     def getbyUser(self, user):
 
-        query = "SELECT * FROM jobs WHERE status = 2 and user = " + str(user) + " ORDER by jobId"
+        query = "SELECT * FROM jobs WHERE status = 2 and user = '" + str(user) + "' ORDER by jobId"
 
-        return self.query( query ).fetchall()
+        cur  = self.query( query ).fetchall()
+
+        return  self.curParser(cur)
+
+
+
+    def curParser(self, cur ):
+        """
+        Parser for the tuples from the jobs table.
+        """
+        if(cur):
+            curParsed = {}
+
+            for row in cur:
+                jobInfo = {}
+                jobInfo = self.tupleParser(row)
+
+                curParsed[ jobInfo["jobId"] ] = jobInfo
+
+            return curParsed
+        else:
+            return None
+
+
+
+    def rowParser(self, row ):
+        """
+        Parser for a tuple from the jobs table.
+        """
+
+        if(row is not None):
+
+            rowParsed = {}
+            jobInfo = {}
+            jobInfo = self.tupleParser(row)
+
+            rowParsed[ jobInfo["jobId"] ] = jobInfo
+
+            return rowParsed
+        else:
+            return None
+
+
+    def tupleParser(self, row ):
+        """
+        Parser for a tuple from the jobs table.
+        """
+
+        jobInfo = {}
+        jobInfo["jobId"]   = row[0]
+        jobInfo["jobName"]   = row[1]
+        jobInfo["user"]   = row[2]
+        jobInfo["status"]   = row[3]
+        jobInfo["path"]   = row[4]
+        jobInfo["outpath"]   = row[7]
+
+        return jobInfo
 
 
 
@@ -89,5 +147,7 @@ if __name__ == "__main__":
 
         db = db( "telescopedb")
 
-        cur = db.getbyUser('user')
+        cur = db.getbyUser("jaquejbrito")
+        print (cur)
+        cur = db.getbyjobId(12)
         print (cur)
