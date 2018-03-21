@@ -10,23 +10,37 @@ def qstatsXMLParser( status ):
     qstatParsed = {}
 
     root = ElementTree.fromstring( status )
-    numJobs = len( root[0] )
 
-    for j in range( numJobs ):
-        jobInfo = {}
-        jobInfo["jstate"]   = root[0][j].attrib["state"]
-        jobInfo["jname"]    = root[0][j].find('JB_name').text
-        jobInfo["jid"]      = int( root[0][j].find('JB_job_number').text )
-        jobInfo["date"]     = root[0][j].find('JAT_start_time').text
-        jobInfo["username"] = root[0][j].find('JB_owner').text
+    # Usually qstat will have a child for all running jobs,
+    # and a child for all queued jobs.
 
-        qstatParsed[ jobInfo["jid"] ] = jobInfo
+    for childID in range( len(root) ):
+
+        child = root[childID]
+        numJobs = len( child )
+
+        for j in range( numJobs ):
+
+            jobInfo = {}
+
+            jobInfo["jstate"]   = child[j].attrib["state"]
+            jobInfo["jname"]    = child[j].find('JB_name').text
+            jobInfo["jid"]      = int( child[j].find('JB_job_number').text )
+
+            if child[j].find('JAT_start_time') != None:
+                jobInfo["date"]     = child[j].find('JAT_start_time').text
+            else:
+                jobInfo["date"]     = ''
+
+            jobInfo["username"] = child[j].find('JB_owner').text
+
+            qstatParsed[ jobInfo["jid"] ] = jobInfo
 
     return qstatParsed
 
 
 def parseStatus2HTML( status ):
-    if ( status == 'qw' ) or ( status == 'queued'):
+    if ( status == 'qw' ) or ( status == 'pending'):
         return '<span style="color: #FF0000;">Queued</span>'
 
     elif ( status == 'r' ) or ( status == 'running' ):
