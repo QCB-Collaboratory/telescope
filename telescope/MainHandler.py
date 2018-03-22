@@ -101,35 +101,35 @@ class MainHandler(tornado.web.RequestHandler):
         content += '</tbody></table></div>'
 
         self.db = db( self.databasePath )
-
         parsedFinishedJobs = self.db.getAllFinished()
-        if len( parsedFinishedJobs ) > 0:
-
-            content += "<br /><h3>List of finished jobs (under development)</3>" + table_strstart
-
-            # Getting set of keys
-            setJobKeys = np.sort( list(parsedFinishedJobs.keys()) )
-
-            for jobKey in setJobKeys:
-
-                # Starting new row
-                content += '<tr>'
-                # Parsing data from qstat
-                statParserd = parsedFinishedJobs[jobKey]
-
-                # Writing the info into the row
-                content +=  '<td>' + \
-                            str(statParserd['jobId']) + '</a></td>' + \
-                            '<td>' + statParserd['user'][:8]  + '</td>' + \
-                            '<td>' + statParserd['jobName']  + '</td>' + \
-                            '<td>Finished with status 0</td>' + \
-                            '<td>--</td>'
-                ## End of row
-                content += '</tr>'
-
-            content += '</tbody></table></div>'
-
         self.db.close()
+
+        if parsedFinishedJobs != None:
+            if len( parsedFinishedJobs ) > 0:
+
+                content += "<br /><h3>List of finished jobs (under development)</3>" + table_strstart
+
+                # Getting set of keys
+                setJobKeys = np.sort( list(parsedFinishedJobs.keys()) )
+
+                for jobKey in setJobKeys:
+
+                    # Starting new row
+                    content += '<tr>'
+                    # Parsing data from qstat
+                    statParserd = parsedFinishedJobs[jobKey]
+
+                    # Writing the info into the row
+                    content +=  '<td>' + \
+                                str(statParserd['jobId']) + '</a></td>' + \
+                                '<td>' + statParserd['user'][:8]  + '</td>' + \
+                                '<td>' + statParserd['jobName']  + '</td>' + \
+                                '<td>Finished with status 0</td>' + \
+                                '<td>--</td>'
+                    ## End of row
+                    content += '</tr>'
+
+                content += '</tbody></table></div>'
 
 
         if curStatus == {}:
