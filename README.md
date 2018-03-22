@@ -17,8 +17,6 @@ This project started as an effort from the [Collaboratory](https://qcb.ucla.edu/
 
 There are very few steps necessary to get started with Telescope. For a step-by-step tutorial, [click here](https://github.com/QCB-Collaboratory/telescope/blob/master/test/Readme.md) or [here](https://github.com/QCB-Collaboratory/telescope/wiki/Documentation).
 
-<img align="right" width="150" src="resources/telescope_icon.png">
-
 ### Installation
 
 The easiest way to install telescope is by using ```pip```:
