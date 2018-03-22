@@ -72,7 +72,7 @@ class db:
 
     def getbyjobId(self, jobId):
 
-        query = "SELECT * FROM jobs WHERE status = 2 and jobId = " + str(jobId)
+        query = "SELECT * FROM jobs WHERE jobId = " + str(jobId)
 
         row = self.query( query ).fetchone()
 
