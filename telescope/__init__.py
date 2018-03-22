@@ -256,6 +256,14 @@ class server:
 
         self.logger.info('Tornado setup done.')
 
+        # Kicking the monitor job
+        monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
+        monitorLoop_process.start()
+        self.logger.info('Parallel status monitor started.')
+
+        # Starting tornado server loop
+        self.application = web.Application(self.handlers, **self.settings)
+
 
         # Set up ctrl C
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -265,15 +273,8 @@ class server:
 
     def run(self):
 
-        # Kicking the monitor job
-        monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
-        monitorLoop_process.start()
-        self.logger.info('Parallel status monitor started.')
-
-
-        # Starting tornado server loop
-        application = web.Application(self.handlers, **self.settings)
-        application.listen(self.port)
+        # Setting port to listen
+        self.application.listen(self.port)
 
         print( "Starting data collection (CTRL+C to stop)" )
 
