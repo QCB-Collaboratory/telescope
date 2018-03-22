@@ -120,7 +120,8 @@ def monitorLoop( queueMonitor ):
 class server:
 
 
-    def __init__(self, port = 4000):
+    def __init__( self, port = 4000, configFilename='config.ini',
+                    telescopeSSHPrivateKey = None ):
         """ This starts the server.
         """
 
@@ -136,40 +137,63 @@ class server:
 
         ## Loading configuration file
         config = configparser.ConfigParser()
-        config.read('config.ini')
+        config.read( configFilename )
         self.logger.info('Configurations read succesfully.')
 
 
-        # Extract name of the account that will be used for log-in
-        self.credential_username = config['CREDENTIALS']['USER']
-        # Extract the address of the server
-        self.remoteServerAddress = config['CREDENTIALS']['SERVER']
+        if configFilename == None:
 
-        # If there is a password listed, get that
-        if config.has_option('CREDENTIALS', 'PASS'):
-            self.credential_password = config['CREDENTIALS']['PASS']
-        else:
-            self.credential_password = ''
+            self.logger.info('Telescope ignoring configuration file.')
 
-        # If there is a database listed, get that
-        if config.has_option('CONFIGURATION', 'DATABASE'):
-            self.database_path = config['CONFIGURATION']['DATABASE']
-        else:
+            self.credential_username = credentialLoginUsername
+            self.credential_password = credentialLoginPassword
+            self.remoteServerAddress = credentialServerAddress
+
+            self.logger.info('Credentials set from argument.')
+
+            self.user_names     = listUsernames
+            self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
+
+            self.logger.info('Monitored users set from argument.')
+
             self.database_path = './telescopedb'
 
-        self.logger.info('Credentials parsed.')
-
-        # Create a list of the users whose jobs we'd like to examine
-        self.user_names = []
-        if config.has_option('MONITOR', 'NUMUSERS') and ( int(config['MONITOR']['NUMUSERS']) > 0 ):
-            for ii in range( int(config['MONITOR']['NUMUSERS']) ):
-                self.user_names.append(config['MONITOR']['USER'+str(ii)])
+            self.logger.info('Database name set from argument.')
 
         else:
-            self.user_names.append( self.credential_username )
+            # Extract name of the account that will be used for log-in
+            self.credential_username = config['CREDENTIALS']['USER']
+            # Extract the address of the server
+            self.remoteServerAddress = config['CREDENTIALS']['SERVER']
 
-        self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
-        self.logger.info('Monitored users parsed.')
+            # If there is a password listed, get that
+            if config.has_option('CREDENTIALS', 'PASS'):
+                self.credential_password = config['CREDENTIALS']['PASS']
+            else:
+                self.credential_password = ''
+
+            self.logger.info('Credentials parsed from config.ini.')
+
+            # If there is a database listed, get that
+            if config.has_option('CONFIGURATION', 'DATABASE'):
+                self.database_path = config['CONFIGURATION']['DATABASE']
+            else:
+                self.database_path = './telescopedb'
+
+            self.logger.info('Database parsed from config.ini.')
+
+            # Create a list of the users whose jobs we'd like to examine
+            self.user_names = []
+            if config.has_option('MONITOR', 'NUMUSERS') and ( int(config['MONITOR']['NUMUSERS']) > 0 ):
+                for ii in range( int(config['MONITOR']['NUMUSERS']) ):
+                    self.user_names.append(config['MONITOR']['USER'+str(ii)])
+
+            else:
+                self.user_names.append( self.credential_username )
+
+            self.user_names_str = utils.stringAllUsersMonitored( self.user_names )
+
+            self.logger.info('Monitored users parsed from configuration file.')
 
 
         ## Databse
@@ -183,10 +207,13 @@ class server:
 
 
         ## Testing SSH connection
+        self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
+
         self.logger.info('Testing SSH connection...')
         connection = tlscpSSH( self.credential_username,
-                                password=self.credential_password,
-                                address=self.remoteServerAddress )
+                                password   = self.credential_password,
+                                address    = self.remoteServerAddress,
+                                privateKey = self.telescopeSSHPrivateKey )
         self.logger.info('Issuing a command through the SSH connection...')
         connection.query( "uname -a" )
         self.logger.info('Response received: ' + connection.returnedText + "...")
@@ -200,6 +227,7 @@ class server:
         self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
                                                         self.credential_password,
                                                         self.remoteServerAddress,
+                                                        self.telescopeSSHPrivateKey,
                                                         self.user_names,
                                                         self.user_names_str, configDatabase=self.database_path )
 
@@ -208,6 +236,7 @@ class server:
         # Defining argument dictionary
         handlerArguments = { 'credentialUsername'     : self.credential_username,
                                 'credentialPass'      : self.credential_password,
+                                'tlscpSSHPrivateKey'  : self.telescopeSSHPrivateKey,
                                 'setUsername'         : self.user_names,
                                 'setUsername_str'     : self.user_names_str,
                                 'remoteServerAddress' : self.remoteServerAddress,

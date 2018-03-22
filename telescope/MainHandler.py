@@ -26,13 +26,15 @@ class MainHandler(tornado.web.RequestHandler):
     Root access
     """
 
-    def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
+    def initialize(self, credentialUsername, credentialPass,
+                    remoteServerAddress, tlscpSSHPrivateKey,
                     setUsername, setUsername_str, queueMonitor ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
         self.credentialPassword  = credentialPass
         self.remoteServerAddress = remoteServerAddress
+        self.tlscpSSHPrivateKey  = tlscpSSHPrivateKey
 
         # Usernames to keep track of
         self.setUsernames     = setUsername

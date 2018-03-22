@@ -15,12 +15,15 @@ from telescope.dbKernel import db
 class jobStatusMonitor:
 
     def __init__(self, credentialUsername, credentialPassword,
-                    remoteServerAddress, setUsernames, setUsernames_str,
+                    remoteServerAddress, telescopeSSHPrivateKey,
+                    setUsernames, setUsernames_str,
                     monitoringInterval = 20., configDatabase="./telescopedb"):
 
-        self.credentialUsername  = credentialUsername
-        self.credentialPassword  = credentialPassword
-        self.remoteServerAddress = remoteServerAddress
+        self.credentialUsername     = credentialUsername
+        self.credentialPassword     = credentialPassword
+        self.remoteServerAddress    = remoteServerAddress
+        self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
+
         self.setUsernames        = setUsernames
         self.setUsernames_str    = setUsernames_str
 
@@ -58,8 +61,9 @@ class jobStatusMonitor:
 
         # Connecting to the server through SSH
         connection = tlscpSSH( self.credentialUsername,
-                                password = self.credentialPassword,
-                                address  = self.remoteServerAddress )
+                                password   = self.credentialPassword,
+                                address    = self.remoteServerAddress,
+                                privateKey = self.telescopeSSHPrivateKey )
 
         # Accessing the current status
         #connection.query( "qstat -u " + self.setUsernames[0] )

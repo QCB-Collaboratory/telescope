@@ -10,9 +10,13 @@ class tlscpSSH:
     use of SSH keys and password.
     """
 
-    def __init__(self, username, password='', address = ''):
+    def __init__(self, username, password='', address = '',
+                    privateKey = None ):
 
         logging.info("tlscpSSH: Setting up the client.")
+
+        if privateKey != None:
+            privkey = paramiko.RSAKey.from_private_key_file( privateKey )
 
         # Instance of the ssh client
         self.sshClient = paramiko.client.SSHClient()
@@ -22,10 +26,19 @@ class tlscpSSH:
 
         logging.info("tlscpSSH: Connecting to server <" + address + "> ...")
         logging.info("tlscpSSH: Using username: " + username + " ...")
-        self.sshClient.connect(address, username=username,
-                                        password=password,
-                                        look_for_keys=True
-                                )
+
+        if privateKey == None :
+            self.sshClient.connect(address, username=username,
+                                            password=password,
+                                            look_for_keys=True
+                                            )
+        else:
+            self.sshClient.connect(address, username=username,
+                                            password=password,
+                                            pkey = privkey,
+                                            look_for_keys=True
+                                            )
+
         logging.info("tlscpSSH: Connected.")
 
         self.returnedText = ''

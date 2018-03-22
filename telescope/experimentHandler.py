@@ -23,13 +23,15 @@ rootdir=os.path.dirname(__file__)
 
 class experimentHandler(tornado.web.RequestHandler):
 
-    def initialize(self, credentialUsername, credentialPass, remoteServerAddress,
+    def initialize(self, credentialUsername, credentialPass,
+                        remoteServerAddress, tlscpSSHPrivateKey,
                         setUsername, setUsername_str, queueMonitor ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
         self.credentialPassword  = credentialPass
         self.remoteServerAddress = remoteServerAddress
+        self.tlscpSSHPrivateKey  = tlscpSSHPrivateKey
 
         # Usernames to keep track of
         self.setUsernames     = setUsername
@@ -63,8 +65,9 @@ class experimentHandler(tornado.web.RequestHandler):
 
                 ## Connecting to the server through SSH
                 connection = tlscpSSH( self.credentialUsername,
-                                        password=self.credentialPassword,
-                                        address=self.remoteServerAddress )
+                                        password   = self.credentialPassword,
+                                        address    = self.remoteServerAddress,
+                                        privateKey = self.tlscpSSHPrivateKey )
                 connection.query( "qstat -j " + self.jobID )
                 curStatJ     = connection.returnedText
                 # Name of the script
