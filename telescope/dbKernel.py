@@ -70,23 +70,33 @@ class db:
         else:
             return False
 
+
+    ## List of common queries
+
     def getbyjobId(self, jobId):
-
         query = "SELECT * FROM jobs WHERE jobId = " + str(jobId)
-
         row = self.query( query ).fetchone()
-
         return self.rowParser(row)
 
-
-    def getbyUser(self, user):
-
+    def getbyUser_running(self, user):
         query = "SELECT * FROM jobs WHERE status = 2 and user = '" + str(user) + "' ORDER by jobId"
-
         cur  = self.query( query ).fetchall()
-
         return  self.curParser(cur)
 
+    def getAllRunning(self):
+        query = "SELECT * FROM jobs WHERE status = 2 ORDER by jobId"
+        cur  = self.query( query ).fetchall()
+        return  self.curParser(cur)
+
+    def getAllFinished(self):
+        query = "SELECT * FROM jobs WHERE status = 0 ORDER by jobId"
+        cur  = self.query( query ).fetchall()
+        return  self.curParser(cur)
+
+    def updateStatusbyJobID(self, jobId, newStatus):
+        query = "UPDATE jobs SET status = " + str(newStatus) + "  WHERE jobId = " + str(jobId) + ";"
+        cur  = self.query( query )
+        return
 
 
     def curParser(self, cur ):

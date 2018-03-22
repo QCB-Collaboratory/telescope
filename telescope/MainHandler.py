@@ -16,6 +16,7 @@ import logging
 ## Import internal modules
 import telescope.jobStatusMonitor as jobStatusMonitor
 from telescope.sshKernel import tlscpSSH
+from telescope.dbKernel import db
 import telescope.utils as utils
 
 rootdir=os.path.dirname(__file__)
@@ -28,7 +29,7 @@ class MainHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass,
                     remoteServerAddress, tlscpSSHPrivateKey,
-                    setUsername, setUsername_str, queueMonitor ):
+                    setUsername, setUsername_str, queueMonitor, databasePath ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
@@ -43,6 +44,8 @@ class MainHandler(tornado.web.RequestHandler):
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
 
+        self.databasePath = databasePath
+
         return
 
 
@@ -51,7 +54,8 @@ class MainHandler(tornado.web.RequestHandler):
 
         content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
 
-        content += '<div class="page-header">' + \
+
+        table_strstart = '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
                     '<thead><tr>' + \
                     '<th width=100px>Job ID</th>' + \
@@ -61,6 +65,8 @@ class MainHandler(tornado.web.RequestHandler):
                     '<th>Started in</th>' + \
                     '</tr></thead>'+ \
                     '<tbody>\n'
+
+        content += table_strstart
 
         # Grabt the latest status from the servers
         curStatus  = self.queueMonitor.getMonitorCurrentStatus()
@@ -93,6 +99,38 @@ class MainHandler(tornado.web.RequestHandler):
                 content += '</tr>'
 
         content += '</tbody></table></div>'
+
+        self.db = db( self.databasePath )
+
+        parsedFinishedJobs = self.db.getAllFinished()
+        if len( parsedFinishedJobs ) > 0:
+
+            content += "<br /><h3>List of finished jobs (under development)</3>" + table_strstart
+
+            # Getting set of keys
+            setJobKeys = np.sort( list(parsedFinishedJobs.keys()) )
+
+            for jobKey in setJobKeys:
+
+                # Starting new row
+                content += '<tr>'
+                # Parsing data from qstat
+                statParserd = parsedFinishedJobs[jobKey]
+
+                # Writing the info into the row
+                content +=  '<td>' + \
+                            str(statParserd['jobId']) + '</a></td>' + \
+                            '<td>' + statParserd['user'][:8]  + '</td>' + \
+                            '<td>' + statParserd['jobName']  + '</td>' + \
+                            '<td>Finished with status 0</td>' + \
+                            '<td>--</td>'
+                ## End of row
+                content += '</tr>'
+
+            content += '</tbody></table></div>'
+
+        self.db.close()
+
 
         if curStatus == {}:
             content += "<script>setTimeout(function(){ window.location.reload(1); }, 1000);</script>"

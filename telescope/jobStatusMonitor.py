@@ -69,6 +69,8 @@ class jobStatusMonitor:
         #connection.query( "qstat -u " + self.setUsernames[0] )
         #self.curStatus = connection.getQueryResult()
 
+        self.db = db( self.configDatabase )
+
         connection.query( "qstat -xml -u " + self.setUsernames_str )
         self.curStatusParsed = utils.qstatsXMLParser( connection.getQueryResult() )
 
@@ -76,8 +78,6 @@ class jobStatusMonitor:
         numJobs = len( self.curStatusParsed )
 
         if numJobs > 0:
-
-            self.db = db( self.configDatabase )
 
             # Getting set of keys
             setJobKeys = np.sort( list(self.curStatusParsed.keys()) )
@@ -92,7 +92,7 @@ class jobStatusMonitor:
 
                     if( str(statParserd['jstate']) == "running" ):
                         status = 2
-                    elif( str(statParserd['jstate']) == "queued" ):
+                    elif( str(statParserd['jstate']) == "pending" ):
                         status = 1
                     else:
                         status = 0
@@ -121,9 +121,19 @@ class jobStatusMonitor:
                                         sgeOWorkDir,
                                         outpath )
 
-            self.db.close()
+
+        db_allRunning = self.db.getAllRunning()
+        if self.curStatusParsed != None and db_allRunning != None:
+            list_keys_inDB = db_allRunning.keys()
+            for key in list_keys_inDB:
+                if not( key  in self.curStatusParsed.keys() ):
+                    self.db.updateStatusbyJobID(key, 0)
+
+        # Closing the connection to the database
+        self.db.close()
 
         # Closing the connection to the server
         connection.close()
+
 
         return

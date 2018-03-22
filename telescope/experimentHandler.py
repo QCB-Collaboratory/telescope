@@ -25,7 +25,7 @@ class experimentHandler(tornado.web.RequestHandler):
 
     def initialize(self, credentialUsername, credentialPass,
                         remoteServerAddress, tlscpSSHPrivateKey,
-                        setUsername, setUsername_str, queueMonitor ):
+                        setUsername, setUsername_str, queueMonitor, databasePath ):
 
         # Credentials for log in
         self.credentialUsername  = credentialUsername
@@ -39,6 +39,8 @@ class experimentHandler(tornado.web.RequestHandler):
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
+
+        self.databasePath = databasePath
 
         return
 

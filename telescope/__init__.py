@@ -240,7 +240,8 @@ class server:
                                 'setUsername'         : self.user_names,
                                 'setUsername_str'     : self.user_names_str,
                                 'remoteServerAddress' : self.remoteServerAddress,
-                                'queueMonitor'        : self.queueMonitor }
+                                'queueMonitor'        : self.queueMonitor,
+                                'databasePath'        : self.database_path }
 
         # Setting up handlers
         self.handlers = [
