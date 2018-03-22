@@ -85,6 +85,7 @@ class experimentHandler(tornado.web.RequestHandler):
                     numLines = 20
 
 
+                # Grabbing the first 20 lines of the script source file
                 scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
                                         nlines=20, order=1 )
 
@@ -99,7 +100,8 @@ class experimentHandler(tornado.web.RequestHandler):
 
                     outputPath = sgeOWorkDir + '/' + dbJobInfo[int(self.jobID)]['outpath']
 
-                    curOutput = connection.grabFile(outputPath, nlines=20, order=1 )
+                    # Grabbing the last 20 lines of the output file
+                    curOutput = connection.grabFile(outputPath, nlines=20, order=-1 )
 
                 else:
 
