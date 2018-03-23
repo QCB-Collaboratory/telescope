@@ -1,7 +1,8 @@
 ## standard libraries
-import sys, os, io
+import sys, os, io, base64
 import datetime, time, signal
 import webbrowser
+
 
 ## to create parallel processes
 import multiprocessing as mp
@@ -106,7 +107,6 @@ def monitorLoop( queueMonitor ):
     while 1:
 
         logger.info('Queue monitor running...')
-        print( 'checking status' )
 
         # Updating from server
         queueMonitor.checkQstat()
@@ -160,8 +160,8 @@ class server:
 
             self.logger.info('Monitored users set from argument.')
 
-            self.database_path = './telescopedb'
 
+            self.database_path = './telescopedb'
             self.logger.info('Database name set from argument.')
 
         else:
@@ -257,7 +257,8 @@ class server:
 
         # General settings
         self.settings = dict(
-            static_path = os.path.join( os.path.dirname(__file__), "pages")
+            static_path   = os.path.join( os.path.dirname(__file__), "pages"),
+            cookie_secret = base64.b64encode( os.urandom( 80 ) ).decode('ascii')
             )
 
         self.logger.info('Tornado setup done.')
@@ -269,7 +270,7 @@ class server:
 
         # Starting tornado server loop
         self.application = web.Application(self.handlers, **self.settings)
-
+        self.logger.info('Tornado web application created.')
 
         # Set up ctrl C
         signal.signal(signal.SIGINT, self.signal_handler)

@@ -65,12 +65,15 @@ class actionHandler(tornado.web.RequestHandler):
 
 
             if self.action == '0':
+
+                self.set_secure_cookie( "query", "a:" + str(self.action) + ",jid:" + str(self.jobID)  )
+
                 # Querying the system
                 connection.stopJob( self.jobID )
                 # Requesting an update from the queue monitor
                 self.queueMonitor.requestUpdate()
                 # Giving it some time to take effect
-                time.sleep(1.2)
+                time.sleep(1.5)
 
             ## Closing the SSH connection
             connection.close()

@@ -52,7 +52,30 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        content = "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
+        content = ""
+
+        if self.get_secure_cookie("query"):
+
+            # Grabbing the value stored in the secure cookie query
+            queryText = str( self.get_secure_cookie("query").decode("utf-8") )
+
+            if queryText[:2] == 'a:':
+
+                actionID, arg = utils.cookieQueryParser(queryText)
+
+                content += "<div id=\"WARNING\" style=\"position: fixed; min-width: 10px; padding-right:30px; padding-left:30px; padding-top: 20px; padding-bottom: 20px; top: 200px; left: 40%; background-color:#BFB; font-size:15pt; text-align: center; border: 1px solid #0A0; border-radius: 10px;\">"
+
+                if actionID == 'stop job':
+                    self.set_secure_cookie("query","")
+                    content += "Stopped job ID <b>" + arg['jobid'] + "</b>"
+
+                content += "</div>"
+
+            content += "<script>$(document).ready(function(){ $(\"#WARNING\").delay(5000).fadeOut(1500); });</script>"
+
+            self.set_secure_cookie("query","")
+
+        content += "<p>Welcome to Telescope Server! Below you will find a list of your jobs. Click on the job ID to see more details.</p>"
 
 
         table_strstart = '<div class="page-header">' + \

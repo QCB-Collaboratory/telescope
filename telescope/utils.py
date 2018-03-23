@@ -57,6 +57,14 @@ status_dict = {
 def parseStatusCode( status ): return status_dict[status]
 
 
+def cookieQueryParser( cookieString ):
+    splitString = cookieString.split(',')
+    if splitString[0].split(':')[1] == "0":
+        actionID = 'stop job'
+        args = {}
+        args['jobid'] = splitString[1].split(':')[1]
+    return actionID, args
+
 
 
 def stringAllUsersMonitored(listUsers):
