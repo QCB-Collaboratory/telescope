@@ -88,9 +88,25 @@ class db:
         cur  = self.query( query ).fetchall()
         return  self.curParser(cur)
 
-    def getAllFinished(self):
-        query = "SELECT * FROM jobs WHERE status = 0 ORDER by jobId"
+    def getAllActive(self):
+        """
+        Returns all jobs that are registered as either running or
+        queued.
+        """
+        query = "SELECT * FROM jobs WHERE status = 2 OR status = 1 ORDER by jobId"
         cur  = self.query( query ).fetchall()
+        return  self.curParser(cur)
+
+    def getAllFinished( self, order = -1 ):
+        """
+        Retrieve data about finished jobs
+        """
+        query = "SELECT * FROM jobs WHERE status = 0 ORDER by jobId "
+        if order == -1: query += "DESC"
+        else:           query += "ASC"
+
+        cur  = self.query( query ).fetchall()
+
         return  self.curParser(cur)
 
     def updateStatusbyJobID(self, jobId, newStatus):

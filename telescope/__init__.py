@@ -24,6 +24,7 @@ from telescope.sshKernel import tlscpSSH
 from telescope.jobStatusMonitor import jobStatusMonitor
 from telescope.MainHandler import MainHandler
 from telescope.experimentHandler import experimentHandler
+from telescope.actionHandler import actionHandler
 import telescope.utils as utils
 from telescope.dbKernel import db
 
@@ -105,12 +106,15 @@ def monitorLoop( queueMonitor ):
     while 1:
 
         logger.info('Queue monitor running...')
+        print( 'checking status' )
 
+        # Updating from server
         queueMonitor.checkQstat()
 
         # sleeping between each call
         logger.info('Queue monitor sleeping...')
-        time.sleep( queueMonitor.getMonitoringInterval() )
+
+        queueMonitor.sleep()
 
     return
 
@@ -248,6 +252,7 @@ class server:
                             (r'/', MainHandler, handlerArguments),
                             (r'/logging', loggingHandler),
                             (r'/experiment', experimentHandler, handlerArguments),
+                            (r'/query', actionHandler, handlerArguments),
                         ]
 
         # General settings

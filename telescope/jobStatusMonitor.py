@@ -17,27 +17,55 @@ class jobStatusMonitor:
     def __init__(self, credentialUsername, credentialPassword,
                     remoteServerAddress, telescopeSSHPrivateKey,
                     setUsernames, setUsernames_str,
-                    monitoringInterval = 20., configDatabase="./telescopedb"):
+                    monitoringInterval = 20., monitoringSubInterval = 1.,
+                    configDatabase="./telescopedb"):
 
         self.credentialUsername     = credentialUsername
         self.credentialPassword     = credentialPassword
         self.remoteServerAddress    = remoteServerAddress
         self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
 
-        self.setUsernames        = setUsernames
-        self.setUsernames_str    = setUsernames_str
+        self.setUsernames           = setUsernames
+        self.setUsernames_str       = setUsernames_str
 
-        self.monitoringInterval = monitoringInterval
+        self.monitoringInterval     = monitoringInterval
+        self.monitoringSubInterval  = monitoringSubInterval
+        self.numSleepIntervals      = int( monitoringInterval / monitoringSubInterval ) + 1
+        self.currentSleepStep       = 0
 
         self.configDatabase = configDatabase
 
         self.runningFlag = 1
+        self.updateNow   = False
 
         # Initializing status variable
         self.curStatusParsed = {}
 
         return
 
+
+    def sleep(self):
+
+        # Initializing the count of time intervals
+        self.currentSleepStep = 0
+
+        while self.currentSleepStep <= self.numSleepIntervals:
+
+            # sleep for one more time interval
+            time.sleep( self.monitoringSubInterval )
+            self.currentSleepStep += 1
+
+            # check if update request was issued
+            if self.updateNow:
+                self.currentSleepStep = 0
+                self.updateNow = False
+                return
+
+        return
+
+    def requestUpdate(self):
+        self.updateNow = True
+        return
 
     def getMonitoringInterval(self):
         """
@@ -122,12 +150,20 @@ class jobStatusMonitor:
                                         outpath )
 
 
-        db_allRunning = self.db.getAllRunning()
-        if self.curStatusParsed != None and db_allRunning != None:
-            list_keys_inDB = db_allRunning.keys()
+        db_allActive = self.db.getAllActive()
+        if self.curStatusParsed != None and db_allActive != None:
+            list_keys_inDB = db_allActive.keys()
+
             for key in list_keys_inDB:
+                # Updating the status of finished jobs
                 if not( key  in self.curStatusParsed.keys() ):
                     self.db.updateStatusbyJobID(key, 0)
+
+                # Updating the status of running jobs
+                else:
+                    curStatusCode = utils.parseStatusCode( self.curStatusParsed[key]["jstate"] )
+                    if db_allActive[key]["status"] != curStatusCode:
+                        self.db.updateStatusbyJobID(key, curStatusCode)
 
         # Closing the connection to the database
         self.db.close()

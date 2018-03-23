@@ -50,6 +50,14 @@ def parseStatus2HTML( status ):
         return status
 
 
+status_dict = {
+    "running" : 2,
+    "pending" : 1
+}
+def parseStatusCode( status ): return status_dict[status]
+
+
+
 
 def stringAllUsersMonitored(listUsers):
     """

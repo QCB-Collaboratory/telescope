@@ -63,6 +63,7 @@ class MainHandler(tornado.web.RequestHandler):
                     '<th>Job name</th>' + \
                     '<th>state</th>' + \
                     '<th>Started in</th>' + \
+                    '<th></th>' + \
                     '</tr></thead>'+ \
                     '<tbody>\n'
 
@@ -94,7 +95,9 @@ class MainHandler(tornado.web.RequestHandler):
                             '<td>' + \
                             utils.parseStatus2HTML( statParserd['jstate'] ) \
                             + '</td>' + \
-                            '<td>' + statParserd['date']   + '</td>'
+                            '<td>' + statParserd['date']   + '</td>' + \
+                            '<td><a href="/query?jobID=' + str(statParserd['jid']) + \
+                            '&act=0" style="color:#F00;">X</a></td>'
                 ## End of row
                 content += '</tr>'
 
@@ -109,10 +112,7 @@ class MainHandler(tornado.web.RequestHandler):
 
                 content += "<br /><h3>List of finished jobs (under development)</3>" + table_strstart
 
-                # Getting set of keys
-                setJobKeys = np.sort( list(parsedFinishedJobs.keys()) )
-
-                for jobKey in setJobKeys:
+                for jobKey in parsedFinishedJobs.keys():
 
                     # Starting new row
                     content += '<tr>'

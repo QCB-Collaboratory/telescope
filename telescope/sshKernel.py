@@ -97,6 +97,15 @@ class tlscpSSH:
             return "No connection."
 
 
+    def stopJob( self, jobID ):
+        logging.info("tlscpSSH: stopJob method called on jobID = " + str(jobID) )
+        cmd  = "qdel " + str(jobID)
+        self.query( cmd )
+        logging.info("tlscpSSH: Command issued. Returning...")
+        res = self.returnedText
+        self.returnedText = ''
+        return res
+
 
     def grabStdOut(self, jobName, jobID, workDir, nlines=20):
         filename = jobName + ".o" + jobID
