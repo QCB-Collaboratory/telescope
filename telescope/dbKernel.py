@@ -158,12 +158,12 @@ class db:
         """
 
         jobInfo = {}
-        jobInfo["jobId"]   = row[0]
-        jobInfo["jobName"]   = row[1]
-        jobInfo["user"]   = row[2]
-        jobInfo["status"]   = row[3]
-        jobInfo["path"]   = row[4]
-        jobInfo["outpath"]   = row[7]
+        jobInfo["jobId"]       = row[0]
+        jobInfo["jobName"]     = row[1]
+        jobInfo["username"]    = row[2]
+        jobInfo["jobStatus"]   = row[3]
+        jobInfo["workingDir"]  = row[4]
+        jobInfo["outputFile"]  = row[7]
 
         return jobInfo
 

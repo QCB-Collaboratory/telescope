@@ -71,7 +71,7 @@ class MainHandler(tornado.web.RequestHandler):
 
                 content += "</div>"
 
-            content += "<script>$(document).ready(function(){ $(\"#WARNING\").delay(5000).fadeOut(1500); });</script>"
+            content += "<script>$(document).ready(function(){ $(\"#WARNING\").delay(3000).fadeOut(1500); });</script>"
 
             self.set_secure_cookie("query","")
 
@@ -111,15 +111,15 @@ class MainHandler(tornado.web.RequestHandler):
                 statParserd = curStatus[jobKey]
 
                 # Writing the info into the row
-                content +=  '<td><a href="/experiment?jobID=' + str(statParserd['jid']) + '">' + \
-                            str(statParserd['jid']) + '</a></td>' + \
+                content +=  '<td><a href="/experiment?jobID=' + str(statParserd['jobId']) + '">' + \
+                            str(statParserd['jobId']) + '</a></td>' + \
                             '<td>' + statParserd['username'][:8]  + '</td>' + \
-                            '<td>' + statParserd['jname']  + '</td>' + \
+                            '<td>' + statParserd['jobName']  + '</td>' + \
                             '<td>' + \
-                            utils.parseStatus2HTML( statParserd['jstate'] ) \
+                            utils.parseStatus2HTML( statParserd['jobStatus'] ) \
                             + '</td>' + \
-                            '<td>' + statParserd['date']   + '</td>' + \
-                            '<td><a href="/query?jobID=' + str(statParserd['jid']) + \
+                            '<td>' + statParserd['startDate']   + '</td>' + \
+                            '<td><a href="/query?jobID=' + str(statParserd['jobId']) + \
                             '&act=0" style="color:#F00;">X</a></td>'
                 ## End of row
                 content += '</tr>'
@@ -145,7 +145,7 @@ class MainHandler(tornado.web.RequestHandler):
                     # Writing the info into the row
                     content +=  '<td>' + \
                                 str(statParserd['jobId']) + '</a></td>' + \
-                                '<td>' + statParserd['user'][:8]  + '</td>' + \
+                                '<td>' + statParserd['username'][:8]  + '</td>' + \
                                 '<td>' + statParserd['jobName']  + '</td>' + \
                                 '<td>Finished with status 0</td>' + \
                                 '<td>--</td>'

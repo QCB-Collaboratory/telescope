@@ -23,18 +23,18 @@ def qstatsXMLParser( status ):
 
             jobInfo = {}
 
-            jobInfo["jstate"]   = child[j].attrib["state"]
-            jobInfo["jname"]    = child[j].find('JB_name').text
-            jobInfo["jid"]      = int( child[j].find('JB_job_number').text )
+            jobInfo["jobStatus"]   = child[j].attrib["state"]
+            jobInfo["jobName"]    = child[j].find('JB_name').text
+            jobInfo["jobId"]      = int( child[j].find('JB_job_number').text )
 
             if child[j].find('JAT_start_time') != None:
-                jobInfo["date"]     = child[j].find('JAT_start_time').text
+                jobInfo["startDate"]     = child[j].find('JAT_start_time').text
             else:
-                jobInfo["date"]     = ''
+                jobInfo["startDate"]     = ''
 
             jobInfo["username"] = child[j].find('JB_owner').text
 
-            qstatParsed[ jobInfo["jid"] ] = jobInfo
+            qstatParsed[ jobInfo["jobId"] ] = jobInfo
 
     return qstatParsed
 

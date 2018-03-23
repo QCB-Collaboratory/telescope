@@ -91,7 +91,7 @@ class experimentHandler(tornado.web.RequestHandler):
                 scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
                                         nlines=20, order=1 )
 
-                if statParserd['jstate'] == 'running' :
+                if statParserd['jobStatus'] == 'running' :
 
                     db_ = db( './telescopedb' )
                     dbJobInfo = db_.getbyjobId( int(self.jobID) )
@@ -100,8 +100,8 @@ class experimentHandler(tornado.web.RequestHandler):
                     curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
                                                         sgeOWorkDir, nlines=numLines )
 
-                    outputPath = sgeOWorkDir + '/' + dbJobInfo[int(self.jobID)]['outpath']
-
+                    outputPath = sgeOWorkDir + '/' + dbJobInfo[int(self.jobID)]['outputFile']
+                    
                     # Grabbing the last 20 lines of the output file
                     curOutput = connection.grabFile(outputPath, nlines=20, order=-1 )
 
@@ -159,11 +159,11 @@ class experimentHandler(tornado.web.RequestHandler):
         # Starting new row
         content += '<tr>'
         # Writing the info into the row
-        content +=  '<td><a href="/experiment?jobID=' + str(qstat_parsed['jid']) + '">' + \
-                    str(qstat_parsed['jid']) + '</a></td>' + \
-                    '<td>' + qstat_parsed['jname']  + '</td>' + \
-                    '<td>' + qstat_parsed['jstate'] + '</td>' + \
-                    '<td>' + qstat_parsed['date']   + '</td>'
+        content +=  '<td><a href="/experiment?jobID=' + str(qstat_parsed['jobId']) + '">' + \
+                    str(qstat_parsed['jobId']) + '</a></td>' + \
+                    '<td>' + qstat_parsed['jobName']  + '</td>' + \
+                    '<td>' + qstat_parsed['jobStatus'] + '</td>' + \
+                    '<td>' + qstat_parsed['startDate']   + '</td>'
         ## End of row
         content += '</tr>'
         content += '</tbody></table></div>'

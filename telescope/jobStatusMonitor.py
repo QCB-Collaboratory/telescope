@@ -116,23 +116,23 @@ class jobStatusMonitor:
                 statParserd = self.curStatusParsed[jobKey]
 
                 # checking if job is not in the database yet
-                if( not self.db.checkJob( statParserd['jid'] ) ):
+                if( not self.db.checkJob( statParserd['jobId'] ) ):
 
-                    if( str(statParserd['jstate']) == "running" ):
+                    if( str(statParserd['jobStatus']) == "running" ):
                         status = 2
-                    elif( str(statParserd['jstate']) == "pending" ):
+                    elif( str(statParserd['jobStatus']) == "pending" ):
                         status = 1
                     else:
                         status = 0
 
-                    connection.query( "qstat -j " + str(statParserd['jid']) )
+                    connection.query( "qstat -j " + str(statParserd['jobId']) )
                     curStatJ     = connection.returnedText
                     sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
                     sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
 
                     ## Figuring out the output path
                     # Standard SGE output
-                    outpath = statParserd['jname'] + ".o" + str(statParserd['jid'])
+                    outpath = statParserd['jobName'] + ".o" + str(statParserd['jobId'])
                     # Checking for custom output path
                     command =  "cat " + os.path.join(sgeOWorkDir,sgeScriptRun)
                     command += " | grep TELESCOPE-WATCH-OUTPUT:"
@@ -142,8 +142,8 @@ class jobStatusMonitor:
                         outpath = curStatJ.split("TELESCOPE-WATCH-OUTPUT:")[1].strip(' \t\n\r')
 
                     ## Inserting data about the job into the database
-                    self.db.insertJob( str(statParserd['jid']),
-                                        str(statParserd['jname']),
+                    self.db.insertJob( str(statParserd['jobId']),
+                                        str(statParserd['jobName']),
                                         str(statParserd['username']),
                                         str(status),
                                         sgeOWorkDir,
@@ -161,8 +161,8 @@ class jobStatusMonitor:
 
                 # Updating the status of running jobs
                 else:
-                    curStatusCode = utils.parseStatusCode( self.curStatusParsed[key]["jstate"] )
-                    if db_allActive[key]["status"] != curStatusCode:
+                    curStatusCode = utils.parseStatusCode( self.curStatusParsed[key]["jobStatus"] )
+                    if db_allActive[key]["jobStatus"] != curStatusCode:
                         self.db.updateStatusbyJobID(key, curStatusCode)
 
         # Closing the connection to the database

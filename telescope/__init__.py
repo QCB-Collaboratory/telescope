@@ -1,8 +1,9 @@
 ## standard libraries
 import sys, os, io, base64
-import datetime, time, signal
+import datetime, time
+import signal
 import webbrowser
-
+import configparser
 
 ## to create parallel processes
 import multiprocessing as mp
@@ -16,9 +17,6 @@ from tornado.ioloop import IOLoop
 from tornado.web import asynchronous, RequestHandler, Application
 from tornado.httpclient import AsyncHTTPClient
 import logging
-
-##
-import configparser
 
 ## Import internal modules
 from telescope.sshKernel import tlscpSSH
@@ -125,7 +123,7 @@ class server:
 
 
     def __init__( self, port = 4000, configFilename='config.ini',
-                    telescopeSSHPrivateKey = None ):
+                    telescopeSSHPrivateKey = None, monitoringInterval = 20. ):
         """ This starts the server.
         """
 
@@ -233,7 +231,9 @@ class server:
                                                         self.remoteServerAddress,
                                                         self.telescopeSSHPrivateKey,
                                                         self.user_names,
-                                                        self.user_names_str, configDatabase=self.database_path )
+                                                        self.user_names_str,
+                                                        monitoringInterval = monitoringInterval,
+                                                        configDatabase = self.database_path )
 
         ## Starting tornado
 
@@ -255,20 +255,20 @@ class server:
                             (r'/query', actionHandler, handlerArguments),
                         ]
 
-        # General settings
+        ## General settings
         self.settings = dict(
             static_path   = os.path.join( os.path.dirname(__file__), "pages"),
             cookie_secret = base64.b64encode( os.urandom( 80 ) ).decode('ascii')
             )
 
-        self.logger.info('Tornado setup done.')
+        self.logger.info('Tornado sectup done.')
 
-        # Kicking the monitor job
+        ## Kicking the monitor job
         monitorLoop_process = Process( target=monitorLoop, args=[ self.queueMonitor ])
         monitorLoop_process.start()
         self.logger.info('Parallel status monitor started.')
 
-        # Starting tornado server loop
+        ## Starting tornado application
         self.application = web.Application(self.handlers, **self.settings)
         self.logger.info('Tornado web application created.')
 
@@ -279,6 +279,9 @@ class server:
 
 
     def run(self):
+        """
+        This method starts tornado ioloop.
+        """
 
         # Setting port to listen
         self.application.listen(self.port)
