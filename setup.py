@@ -46,7 +46,7 @@ setup(
                 'pages/css/*', 'pages/js/*', 'pages/fonts/*']
     },
 
-    install_requires=['paramiko','tornado','configparser'],
+    install_requires=['paramiko','tornado','configparser','pynacl'],
     extras_require={},
 
 )

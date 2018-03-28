@@ -30,24 +30,30 @@ class db:
 
     def createTable(self):
 
-        query = "create table if not exists "
-        query += "jobs("
-        query += "jobId INTEGER PRIMARY KEY,"
-        query += "jobName TEXT,"
-        query += "user VARCHAR(30), status INTEGER,"
-        query += "path TEXT, command TEXT, sourceDirectory TEXT, outpath TEXT,"
-        query += "memoryRequested TEXT, currentMemory INTEGER, maximumMemory INTEGER,"
-        query += "parallel INTEGER, cores INTEGER,"
-        query += "clusterNode TEXT,"
-        query += "timeAdded VARCHAR(30), runTime TEXT, timeRemaining TEXT,"
-        query += "finalRunTime TEXT,"
-        query += "finalStatus TEXT"
-        query += ");"
+        #CREATE TABLE Users ( id integer primary key autoincrement, username text, email text, passhash text, salt text ) ;
+        #INSERT INTO Users ( username, email, passhash, salt ) VALUES ( '', '', '', '' )
+
+        query = """create table if not exists
+                    jobs( jobId INTEGER PRIMARY KEY, jobName TEXT,
+                        user VARCHAR(30), status INTEGER,
+                        path TEXT, command TEXT, sourceDirectory TEXT, outpath TEXT,
+                        memoryRequested TEXT, currentMemory INTEGER, maximumMemory INTEGER,
+                        parallel INTEGER, cores INTEGER,
+                        clusterNode TEXT,
+                        timeAdded VARCHAR(30), runTime TEXT, timeRemaining TEXT,
+                        finalRunTime TEXT,finalStatus TEXT
+                        );
+                """
 
         self.query( query )
 
         return
 
+
+    def getPasswdSalt(self, username):
+        query = "SELECT passhash, salt FROM Users WHERE username = '" + username  + "'"
+        row = self.query(query).fetchone()
+        return row[0], row[1]
 
     ## customized queries
     def insertJob(self, jobId, jobName, user, status, path, outpath):

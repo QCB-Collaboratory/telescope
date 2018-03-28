@@ -2,7 +2,10 @@ import os
 
 from telescope.sshKernel import tlscpSSH
 import telescope.utils as utils
+from telescope.dbKernel import db
 
+from nacl import pwhash, secret, utils as naclutils
+import nacl
 
 class SGEServerInterface:
     """
@@ -11,8 +14,8 @@ class SGEServerInterface:
 
 
     def __init__( self, credentialUsername, credentialPassword,
-                    remoteServerAddress,
-                    setUsernames):
+                    remoteServerAddress, setUsernames,
+                    databaseName = 'telescopedb'):
 
         self.credentialUsername     = credentialUsername
         self.credentialPassword     = credentialPassword
@@ -22,15 +25,41 @@ class SGEServerInterface:
 
         self.sshFolder = 'sshKeys/'
 
+        self.databaseName = databaseName
+
         # Getting string of all monitored users
         self.user_names_str = utils.stringAllUsersMonitored( self.setUsernames )
 
         return
 
 
-    def privKey(self, username ):
-        return os.path.join( self.sshFolder, 'id_rsa_' + username)
+    def decryptPrivKey( self, username, password ):
 
+        ## Reading the encrypted private key
+        privKey_e = self.getEncryptedPrivKey(username)
+
+        ## Retrieving salt
+        tlscpDB = db( self.databaseName )
+        p_, salt_ = tlscpDB.getPasswdSalt(username)
+        tlscpDB.close()
+
+        ## Decrypting the private key
+        kdf  = pwhash.argon2i.kdf
+        ops  = pwhash.argon2i.OPSLIMIT_SENSITIVE
+        mem  = pwhash.argon2i.MEMLIMIT_SENSITIVE
+        salt = bytes.fromhex(salt_)                 # salt in 'bytes'
+        bpwd = str.encode(password)      # password in 'bytes'
+        key  = kdf(secret.SecretBox.KEY_SIZE, bpwd, salt, opslimit=ops, memlimit=mem)
+        box  = secret.SecretBox(key)
+
+        received  = box.decrypt( privKey_e, encoder=nacl.encoding.HexEncoder )
+
+        return received.decode('utf-8')
+
+
+    def getEncryptedPrivKey(self, username ):
+        filename = os.path.join( self.sshFolder, 'id_rsa_' + username + '_e' )
+        return bytearray( open(filename, 'r').read() , 'utf-8' )
 
     def startSSHconnection(self, username = ''):
         """
