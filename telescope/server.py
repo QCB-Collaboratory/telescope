@@ -11,18 +11,16 @@ class SGEServerInterface:
 
 
     def __init__( self, credentialUsername, credentialPassword,
-                    remoteServerAddress, telescopeSSHPrivateKey,
+                    remoteServerAddress,
                     setUsernames):
 
         self.credentialUsername     = credentialUsername
         self.credentialPassword     = credentialPassword
         self.remoteServerAddress    = remoteServerAddress
 
-        ## Dictionary that maps user to private key path
-        self.privKey = { 'root' : telescopeSSHPrivateKey }
-
         self.setUsernames           = setUsernames
 
+        self.sshFolder = 'sshKeys/'
 
         # Getting string of all monitored users
         self.user_names_str = utils.stringAllUsersMonitored( self.setUsernames )
@@ -30,7 +28,11 @@ class SGEServerInterface:
         return
 
 
-    def startSSHconnection(self, username = '', userID = 'root'):
+    def privKey(self, username ):
+        return os.path.join( self.sshFolder, 'id_rsa_' + username)
+
+
+    def startSSHconnection(self, username = ''):
         """
         Connects to the remote server through SSH
         """
@@ -38,7 +40,7 @@ class SGEServerInterface:
         self.SSHconnection = tlscpSSH( username,
                                 password   = self.credentialPassword,
                                 address    = self.remoteServerAddress,
-                                privateKey = self.privKey[userID] )
+                                privateKey = self.privKey(username) )
         return
 
 
@@ -92,7 +94,7 @@ class SGEServerInterface:
         self.SSHconnection.query( cmd )
         res = self.SSHconnection.returnedText
         self.SSHconnection.returnedText = ''
-        
+
         return res
 
     def grabStdOut(self, jobName, jobID, workDir, nlines=20):

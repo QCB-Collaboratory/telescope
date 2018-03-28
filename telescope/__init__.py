@@ -205,7 +205,6 @@ class server:
         self.ServerInterface = SGEServerInterface( self.credential_username,
                                                     self.credential_password,
                                                     self.remoteServerAddress,
-                                                    self.telescopeSSHPrivateKey,
                                                     self.user_names )
 
         ## Databse
