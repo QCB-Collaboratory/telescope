@@ -19,6 +19,7 @@ from tornado.httpclient import AsyncHTTPClient
 import logging
 
 ## Import internal modules
+from telescope.server import SGEServerInterface
 from telescope.sshKernel import tlscpSSH
 from telescope.jobStatusMonitor import jobStatusMonitor
 from telescope.MainHandler import MainHandler
@@ -198,6 +199,15 @@ class server:
             self.logger.info('Monitored users parsed from configuration file.')
 
 
+        self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
+
+        ## Server instance
+        self.ServerInterface = SGEServerInterface( self.credential_username,
+                                                    self.credential_password,
+                                                    self.remoteServerAddress,
+                                                    self.telescopeSSHPrivateKey,
+                                                    self.user_names )
+
         ## Databse
         # Access the saved database. If it does not exists,
         # the database is created
@@ -207,10 +217,7 @@ class server:
         self.db.close()
         self.logger.info('Database created.')
 
-
         ## Testing SSH connection
-        self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
-
         self.logger.info('Testing SSH connection...')
         connection = tlscpSSH( self.credential_username,
                                 password   = self.credential_password,
@@ -226,24 +233,14 @@ class server:
         BaseManager.register('jobStatusMonitor', jobStatusMonitor)
         manager = BaseManager()
         manager.start()
-        self.queueMonitor = manager.jobStatusMonitor( self.credential_username,
-                                                        self.credential_password,
-                                                        self.remoteServerAddress,
-                                                        self.telescopeSSHPrivateKey,
-                                                        self.user_names,
-                                                        self.user_names_str,
+        self.queueMonitor = manager.jobStatusMonitor( self.ServerInterface,
                                                         monitoringInterval = monitoringInterval,
                                                         configDatabase = self.database_path )
 
         ## Starting tornado
 
         # Defining argument dictionary
-        handlerArguments = { 'credentialUsername'     : self.credential_username,
-                                'credentialPass'      : self.credential_password,
-                                'tlscpSSHPrivateKey'  : self.telescopeSSHPrivateKey,
-                                'setUsername'         : self.user_names,
-                                'setUsername_str'     : self.user_names_str,
-                                'remoteServerAddress' : self.remoteServerAddress,
+        handlerArguments = { 'ServerInterface'     : self.ServerInterface,
                                 'queueMonitor'        : self.queueMonitor,
                                 'databasePath'        : self.database_path }
 

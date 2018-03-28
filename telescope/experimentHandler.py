@@ -23,19 +23,10 @@ rootdir=os.path.dirname(__file__)
 
 class experimentHandler(tornado.web.RequestHandler):
 
-    def initialize(self, credentialUsername, credentialPass,
-                        remoteServerAddress, tlscpSSHPrivateKey,
-                        setUsername, setUsername_str, queueMonitor, databasePath ):
+    def initialize(self, ServerInterface, queueMonitor, databasePath ):
 
-        # Credentials for log in
-        self.credentialUsername  = credentialUsername
-        self.credentialPassword  = credentialPass
-        self.remoteServerAddress = remoteServerAddress
-        self.tlscpSSHPrivateKey  = tlscpSSHPrivateKey
-
-        # Usernames to keep track of
-        self.setUsernames     = setUsername
-        self.setUsernames_str = setUsername_str
+        ## ServerInterface object
+        self.ServerInterface = ServerInterface
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
@@ -66,12 +57,11 @@ class experimentHandler(tornado.web.RequestHandler):
                 statParserd = curStatus[ int(self.jobID) ]
 
                 ## Connecting to the server through SSH
-                connection = tlscpSSH( self.credentialUsername,
-                                        password   = self.credentialPassword,
-                                        address    = self.remoteServerAddress,
-                                        privateKey = self.tlscpSSHPrivateKey )
-                connection.query( "qstat -j " + self.jobID )
-                curStatJ     = connection.returnedText
+                self.ServerInterface.startSSHconnection( username = statParserd['username'] )
+
+                ## Retrieving information about the job
+                curStatJ = self.ServerInterface.qstatJobQuery( self.jobID )
+
                 # Name of the script
                 sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
                 # Working directory
@@ -87,9 +77,9 @@ class experimentHandler(tornado.web.RequestHandler):
                     numLines = 20
 
 
-                # Grabbing the first 20 lines of the script source file
-                scriptContent = connection.grabFile(sgeOWorkDir + '/' + sgeScriptRun,
-                                        nlines=20, order=1 )
+                ## Grabbing the first 20 lines of the script source file
+                scriptContent = self.ServerInterface.grabFile( sgeOWorkDir + '/' + sgeScriptRun,
+                                                                nlines=20, order=1 )
 
                 if statParserd['jobStatus'] == 'running' :
 
@@ -97,13 +87,12 @@ class experimentHandler(tornado.web.RequestHandler):
                     dbJobInfo = db_.getbyjobId( int(self.jobID) )
                     db_.close()
 
-                    curErrMsg  = connection.grabErrOut( sgeJobName, self.jobID,
+                    curErrMsg  = self.ServerInterface.grabErrOut( sgeJobName, self.jobID,
                                                         sgeOWorkDir, nlines=numLines )
 
-                    outputPath = sgeOWorkDir + '/' + dbJobInfo[int(self.jobID)]['outputFile']
-                    
                     # Grabbing the last 20 lines of the output file
-                    curOutput = connection.grabFile(outputPath, nlines=20, order=-1 )
+                    outputPath = os.path.join( sgeOWorkDir, dbJobInfo[int(self.jobID)]['outputFile'] )
+                    curOutput = self.ServerInterface.grabFile(outputPath, nlines=20, order=-1 )
 
                 else:
 
@@ -111,8 +100,8 @@ class experimentHandler(tornado.web.RequestHandler):
                     curErrMsg = None
 
 
-
-                connection.close()
+                ## Terminating the SSH connection
+                self.ServerInterface.closeSSHconnection()
 
                 ## Constructing the info to post on the web page
                 content = self.constructContent( qstat = curStatus, qstat_parsed=statParserd,

@@ -14,19 +14,12 @@ from telescope.dbKernel import db
 
 class jobStatusMonitor:
 
-    def __init__(self, credentialUsername, credentialPassword,
-                    remoteServerAddress, telescopeSSHPrivateKey,
-                    setUsernames, setUsernames_str,
+    def __init__(self, ServerInterface,
                     monitoringInterval = 20., monitoringSubInterval = 1.,
                     configDatabase="./telescopedb"):
 
-        self.credentialUsername     = credentialUsername
-        self.credentialPassword     = credentialPassword
-        self.remoteServerAddress    = remoteServerAddress
-        self.telescopeSSHPrivateKey = telescopeSSHPrivateKey
-
-        self.setUsernames           = setUsernames
-        self.setUsernames_str       = setUsernames_str
+        ## ServerInterface object
+        self.ServerInterface = ServerInterface
 
         self.monitoringInterval     = monitoringInterval
         self.monitoringSubInterval  = monitoringSubInterval
@@ -87,20 +80,14 @@ class jobStatusMonitor:
         information about the job status.
         """
 
-        # Connecting to the server through SSH
-        connection = tlscpSSH( self.credentialUsername,
-                                password   = self.credentialPassword,
-                                address    = self.remoteServerAddress,
-                                privateKey = self.telescopeSSHPrivateKey )
+        ## Connecting to the server
+        self.ServerInterface.startSSHconnection()
 
-        # Accessing the current status
-        #connection.query( "qstat -u " + self.setUsernames[0] )
-        #self.curStatus = connection.getQueryResult()
+        ## Grabbing the result of qstat
+        self.curStatusParsed = utils.qstatsXMLParser( self.ServerInterface.qstatQuery() )
 
+        ## Connecting to the databse
         self.db = db( self.configDatabase )
-
-        connection.query( "qstat -xml -u " + self.setUsernames_str )
-        self.curStatusParsed = utils.qstatsXMLParser( connection.getQueryResult() )
 
         # Getting number of jobs
         numJobs = len( self.curStatusParsed )
@@ -125,8 +112,8 @@ class jobStatusMonitor:
                     else:
                         status = 0
 
-                    connection.query( "qstat -j " + str(statParserd['jobId']) )
-                    curStatJ     = connection.returnedText
+                    ## Retrieving details about the job
+                    curStatJ = self.ServerInterface.qstatJobQuery(self, statParserd['jobId'] )
                     sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
                     sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
 
@@ -169,7 +156,7 @@ class jobStatusMonitor:
         self.db.close()
 
         # Closing the connection to the server
-        connection.close()
+        self.ServerInterface.closeSSHconnection()
 
 
         return

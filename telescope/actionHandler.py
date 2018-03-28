@@ -15,6 +15,7 @@ import logging
 
 ## Import internal modules
 import telescope.jobStatusMonitor as jobStatusMonitor
+from telescope.server import SGEServerInterface
 from telescope.sshKernel import tlscpSSH
 from telescope.dbKernel import db
 import telescope.utils as utils
@@ -27,19 +28,10 @@ class actionHandler(tornado.web.RequestHandler):
     Root access
     """
 
-    def initialize(self, credentialUsername, credentialPass,
-                    remoteServerAddress, tlscpSSHPrivateKey,
-                    setUsername, setUsername_str, queueMonitor, databasePath ):
+    def initialize(self, ServerInterface, queueMonitor, databasePath ):
 
-        # Credentials for log in
-        self.credentialUsername  = credentialUsername
-        self.credentialPassword  = credentialPass
-        self.remoteServerAddress = remoteServerAddress
-        self.tlscpSSHPrivateKey  = tlscpSSHPrivateKey
-
-        # Usernames to keep track of
-        self.setUsernames     = setUsername
-        self.setUsernames_str = setUsername_str
+        ## ServerInterface object
+        self.ServerInterface = ServerInterface
 
         # Server's queue monitoringInterval
         self.queueMonitor = queueMonitor
@@ -58,25 +50,21 @@ class actionHandler(tornado.web.RequestHandler):
         if self.jobID != '-1':
 
             ## Connecting to the server through SSH
-            connection = tlscpSSH( self.credentialUsername,
-                                    password   = self.credentialPassword,
-                                    address    = self.remoteServerAddress,
-                                    privateKey = self.tlscpSSHPrivateKey )
-
+            self.ServerInterface.startSSHconnection()
 
             if self.action == '0':
 
                 self.set_secure_cookie( "query", "a:" + str(self.action) + ",jid:" + str(self.jobID)  )
 
                 # Querying the system
-                connection.stopJob( self.jobID )
+                self.ServerInterface.killJob( self.jobID )
                 # Requesting an update from the queue monitor
                 self.queueMonitor.requestUpdate()
                 # Giving it some time to take effect
                 time.sleep(1.5)
 
             ## Closing the SSH connection
-            connection.close()
+            self.ServerInterface.closeSSHconnection()
 
         content = "<script>window.location.replace('/');</script>"
         self.render(os.path.join(rootdir,"pages/index.html"), title="Telescope server",

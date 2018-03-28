@@ -97,6 +97,7 @@ class tlscpSSH:
             return "No connection."
 
 
+
     def stopJob( self, jobID ):
         logging.info("tlscpSSH: stopJob method called on jobID = " + str(jobID) )
         cmd  = "qdel " + str(jobID)
@@ -107,17 +108,10 @@ class tlscpSSH:
         return res
 
 
-    def grabStdOut(self, jobName, jobID, workDir, nlines=20):
-        filename = jobName + ".o" + jobID
-        path2file = os.path.join( workDir, filename )
-        return self.grabFile( path2file, nlines=nlines )
-
-    def grabErrOut(self, jobName, jobID, workDir, nlines=20):
-        filename = jobName + ".e" + jobID
-        path2file = os.path.join( workDir, filename )
-        return self.grabFile( path2file, nlines=nlines )
-
     def grabFile(self, path2file, nlines=20, order = -1 ):
+        """
+        depracated!!!
+        """
 
         if order == 1:
             readCMD = "head"
