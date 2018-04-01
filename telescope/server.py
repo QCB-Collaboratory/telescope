@@ -47,7 +47,7 @@ class SGEServerInterface:
                                 address    = self.remoteServerAddress,
                                 privateKey = self.getEncryptedPrivKey(username) )
         return
-    
+
     def closeSSHconnection(self):
         """
         Closes the SSH connection ot the remove server.
@@ -83,6 +83,10 @@ class SGEServerInterface:
 
         return received.decode('utf-8')
 
+
+    def checkEncryptedPrivKey(self,username):
+        filename = os.path.join( self.sshFolder, 'id_rsa_' + username + '_e' )
+        return os.path.exists( filename )
 
     def getEncryptedPrivKey(self, username ):
         filename = os.path.join( self.sshFolder, 'id_rsa_' + username + '_e' )

@@ -50,14 +50,27 @@ class UserList(tornado.web.RequestHandler):
 
         content = ""
 
+
+        ## Getting requested user Id from get, if there is one
+        GET_userID  = self.get_argument('userid', '-1')
+
         ## Starting the connection to the databse
         database = db( self.databasePath )
 
-        ## Getting the list of users
-        listUsers = database.getAllUsers()
+        ## Retrieving information about users
 
+        # If single user was requested, checks if it was found
+        uniqueUserFound = False
 
-        content += "<p>List of users currently being tracked.</p>"
+        # Handling requests for all users
+        if GET_userID == '-1':
+            listUsers = database.getAllUsers()  ## Getting the list of users
+            content += "<h2>List of users</h2>"
+        # Handling requests for a single user
+        else:
+            listUsers = database.getUser_byID(GET_userID)  ## Getting the list of users
+            content += "<h2>User details</jh>"
+            uniqueUserFound = True
 
 
         table_strstart = '''<div class="page-header">
@@ -87,13 +100,15 @@ class UserList(tornado.web.RequestHandler):
 
                 # Getting the number of active jobs for this user.
                 listActiveJobs = database.getbyUser_running( userParsed['userId'] )
+
+                # Evaluating the number of active jobs
                 if listActiveJobs == None:
                     numActiveJobs = 'Zero jobs'
                 else:
                     numActiveJobs = str(len(listActiveJobs)) + ' jobs'
 
                 # Writing the info into the row
-                content +=  '<td><a href="/user_details?userId=' \
+                content +=  '<td><a href="/users_list?userid=' \
                             + str(userParsed['userId']) + '">' \
                             + userParsed['username'][:12]  + '</td>' + \
                             '<td>' + userParsed['email']  + '</td>' + \
@@ -103,6 +118,19 @@ class UserList(tornado.web.RequestHandler):
                 content += '</tr>'
 
         content += '</tbody></table></div>'
+
+
+        if uniqueUserFound:
+
+            content += "<h3>SSH private key</h3>"
+
+            if self.ServerInterface.checkEncryptedPrivKey(userParsed['username']):
+                content += "</p>User has primary key and it is saved encrypted. "
+                content += "<a href=\"/users_list?userid=" \
+                            + str(userParsed['userId']) + \
+                            "&showpvkey=1\">View unencrypted?</a></p>"
+            else:
+                content += "<p>User has no primary key</p>"
 
 
         ## Closing the connection with the database

@@ -68,10 +68,17 @@ class db:
         dataRetrieve = self.query(query).fetchall()
         return self.userParser(dataRetrieve)
 
+    def getUser_byID(self, userid):
+        query = "SELECT * FROM Users WHERE id = " + str(userid)
+        dataRetrieve = self.query(query).fetchall()
+        return self.userParser(dataRetrieve)
+
+
     def getPasswdSalt(self, username):
         query = "SELECT passhash, salt FROM Users WHERE username = '" + username  + "'"
         row = self.query(query).fetchone()
         return row[0], row[1]
+
 
     ##
     ## Parser for user information
