@@ -50,9 +50,11 @@ class UserList(tornado.web.RequestHandler):
 
         content = ""
 
-
-        ## Getting requested user Id from get, if there is one
+        ## Variables passed through get protocol
+        # Getting requested user Id from get, if there is one
         GET_userID  = self.get_argument('userid', '-1')
+        # Flag to check if private key should be displayed
+        GET_showpvk = self.get_argument('showpvk', '0')
 
         ## Starting the connection to the databse
         database = db( self.databasePath )
@@ -125,10 +127,17 @@ class UserList(tornado.web.RequestHandler):
             content += "<h3>SSH private key</h3>"
 
             if self.ServerInterface.checkEncryptedPrivKey(userParsed['username']):
-                content += "</p>User has primary key and it is saved encrypted. "
+                content += "<p>User has primary key and it is saved encrypted. "
                 content += "<a href=\"/users_list?userid=" \
                             + str(userParsed['userId']) + \
-                            "&showpvkey=1\">View unencrypted?</a></p>"
+                            "&showpvk=1\">View unencrypted?</a></p>"
+
+                if GET_showpvk == '1':
+                    pvkPlainText = self.ServerInterface.decryptPrivKey(userParsed['username'],'')
+                    content += "<p style=\"font-size:8pt;\">"
+                    content += pvkPlainText.replace('\n', '<br />')
+                    content += "</p>"
+
             else:
                 content += "<p>User has no primary key</p>"
 
