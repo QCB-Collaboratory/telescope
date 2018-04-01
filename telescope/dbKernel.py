@@ -50,24 +50,88 @@ class db:
         return
 
 
+    ##
+    ## Inserting and updating user information
+    ##
+
     def getPasswdSalt(self, username):
         query = "SELECT passhash, salt FROM Users WHERE username = '" + username  + "'"
         row = self.query(query).fetchone()
         return row[0], row[1]
 
-    ## customized queries
+    ##
+    ## Retrieving information from users
+    ##
+
+    def getAllUsers(self):
+        query = "SELECT * FROM Users ORDER BY username"
+        dataRetrieve = self.query(query).fetchall()
+        return self.userParser(dataRetrieve)
+
+    def getPasswdSalt(self, username):
+        query = "SELECT passhash, salt FROM Users WHERE username = '" + username  + "'"
+        row = self.query(query).fetchone()
+        return row[0], row[1]
+
+    ##
+    ## Parser for user information
+    ##
+
+    def userParser(self, cur ):
+        """
+        Parser for the tuples from the Users table.
+        """
+        if(cur):
+            curParsed = {}
+
+            for row in cur:
+                jobInfo = {}
+                jobInfo = self.userTupleParser(row)
+
+                curParsed[ jobInfo["userId"] ] = jobInfo
+
+            return curParsed
+        else:
+            return None
+
+    def userTupleParser(self, row ):
+        """
+        Parser for a tuple from the Users table.
+        """
+        jobInfo = {}
+        jobInfo["userId"]   = row[0]
+        jobInfo["username"]   = row[1]
+        jobInfo["email"]      = row[2]
+        jobInfo["passhash"]   = row[3]
+        jobInfo["salt"]       = row[4]
+        return jobInfo
+
+
+
+    ##
+    ## Inserting and updating job information
+    ##
+
     def insertJob(self, jobId, jobName, user, status, path, outpath):
+        """
+        Insert new job.
+        """
 
-        query = "INSERT INTO jobs (jobId, jobName, user, status, path, outpath)"
-        query += " VALUES ("+jobId+",'"+jobName+"','"+user+"',"+status
-        query += ",'"+path+"','"+outpath+"');"
-        self.query( query )
+        if ( not self.checkJob(jobId) ):
+            query = "INSERT INTO jobs (jobId, jobName, user, status, path, outpath)"
+            query += " VALUES ("+jobId+",'"+jobName+"','"+user+"',"+status
+            query += ",'"+path+"','"+outpath+"');"
+            self.query( query )
+            return True
 
-        return
+        else:
+            return False
 
-    ## customized queries
+
     def checkJob(self, jobId):
-
+        """
+        Checks if a job with given jobId is already in the database.
+        """
         query = "SELECT jobId FROM jobs WHERE jobId = "+str(jobId)
         curr = self.query( query )
 
@@ -77,20 +141,33 @@ class db:
             return False
 
 
-    ## List of common queries
+
+    ##
+    ## Retrieve information about jobs
+    ##
 
     def getbyjobId(self, jobId):
+        """
+        Select a single job associated with a given jobId.
+        """
         query = "SELECT * FROM jobs WHERE jobId = " + str(jobId)
         row = self.query( query ).fetchone()
         return self.rowParser(row)
 
-    def getbyUser_running(self, user):
-        query = "SELECT * FROM jobs WHERE status = 2 and user = '" + str(user) + "' ORDER by jobId"
+    def getAllRunning(self):
+        """
+        Select all jobs currently marked as running.
+        """
+        query = "SELECT * FROM jobs WHERE status = 2 ORDER by jobId"
         cur  = self.query( query ).fetchall()
         return  self.curParser(cur)
 
-    def getAllRunning(self):
-        query = "SELECT * FROM jobs WHERE status = 2 ORDER by jobId"
+    def getbyUser_running(self, user):
+        """
+        Select all jobs currently running associated with the
+        same owner user.
+        """
+        query = "SELECT * FROM jobs WHERE status = 2 and user = '" + str(user) + "' ORDER by jobId"
         cur  = self.query( query ).fetchall()
         return  self.curParser(cur)
 
@@ -120,6 +197,10 @@ class db:
         cur  = self.query( query )
         return
 
+
+    ##
+    ## Job information parser
+    ##
 
     def curParser(self, cur ):
         """

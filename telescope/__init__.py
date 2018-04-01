@@ -24,6 +24,7 @@ from telescope.sshKernel import tlscpSSH
 from telescope.jobStatusMonitor import jobStatusMonitor
 from telescope.MainHandler import MainHandler
 from telescope.experimentHandler import experimentHandler
+from telescope.UserManagement import UserList
 from telescope.actionHandler import actionHandler
 import telescope.utils as utils
 from telescope.dbKernel import db
@@ -217,15 +218,16 @@ class server:
         self.logger.info('Database created.')
 
         ## Testing SSH connection
-        self.logger.info('Testing SSH connection...')
-        connection = tlscpSSH( self.credential_username,
-                                password   = self.credential_password,
-                                address    = self.remoteServerAddress,
-                                privateKey = self.telescopeSSHPrivateKey )
-        self.logger.info('Issuing a command through the SSH connection...')
-        connection.query( "uname -a" )
-        self.logger.info('Response received: ' + connection.returnedText + "...")
-        self.logger.info('Finished testing SSH connection.')
+        # --> this should go to server.py
+        # self.logger.info('Testing SSH connection...')
+        # connection = tlscpSSH( self.credential_username,
+        #                         password   = self.credential_password,
+        #                         address    = self.remoteServerAddress,
+        #                         privateKey = self.telescopeSSHPrivateKey )
+        # self.logger.info('Issuing a command through the SSH connection...')
+        # connection.query( "uname -a" )
+        # self.logger.info('Response received: ' + connection.returnedText + "...")
+        # self.logger.info('Finished testing SSH connection.')
 
 
         # Creating a monitor object
@@ -248,6 +250,7 @@ class server:
                             (r'/', MainHandler, handlerArguments),
                             (r'/logging', loggingHandler),
                             (r'/experiment', experimentHandler, handlerArguments),
+                            (r'/users_list', UserList, handlerArguments),
                             (r'/query', actionHandler, handlerArguments),
                         ]
 

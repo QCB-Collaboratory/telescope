@@ -148,7 +148,7 @@ class MainHandler(tornado.web.RequestHandler):
 
 
         if curStatus == {}:
-            content += "<script>setTimeout(function(){ window.location.reload(1); }, 1000);</script>"
+            content += "<script>setTimeout(function(){ window.location.reload(1); }, 5000);</script>"
 
         self.render(os.path.join(rootdir,"pages/index.html"), title="Telescope server",
                     content = content,

@@ -33,6 +33,33 @@ class SGEServerInterface:
         return
 
 
+    ##
+    ## SSH connection
+    ##
+
+    def startSSHconnection(self, username = ''):
+        """
+        Connects to the remote server through SSH
+        """
+        if username == '': username = self.credentialUsername
+        self.SSHconnection = tlscpSSH( username,
+                                password   = self.credentialPassword,
+                                address    = self.remoteServerAddress,
+                                privateKey = self.getEncryptedPrivKey(username) )
+        return
+    
+    def closeSSHconnection(self):
+        """
+        Closes the SSH connection ot the remove server.
+        """
+        self.SSHconnection.close()
+        return
+
+
+    ##
+    ## Handling the private SSH keys
+    ##
+
     def decryptPrivKey( self, username, password ):
 
         ## Reading the encrypted private key
@@ -61,25 +88,11 @@ class SGEServerInterface:
         filename = os.path.join( self.sshFolder, 'id_rsa_' + username + '_e' )
         return bytearray( open(filename, 'r').read() , 'utf-8' )
 
-    def startSSHconnection(self, username = ''):
-        """
-        Connects to the remote server through SSH
-        """
-        if username == '': username = self.credentialUsername
-        self.SSHconnection = tlscpSSH( username,
-                                password   = self.credentialPassword,
-                                address    = self.remoteServerAddress,
-                                privateKey = self.privKey(username) )
-        return
 
 
-    def closeSSHconnection(self):
-        """
-        Closes the SSH connection ot the remove server.
-        """
-        self.SSHconnection.close()
-        return
-
+    ##
+    ## Querying the server
+    ##
 
     def qstatQuery(self, usernames = '', xml=True):
         """
