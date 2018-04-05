@@ -45,7 +45,7 @@ class SGEServerInterface:
         self.SSHconnection = tlscpSSH( username,
                                 password   = self.credentialPassword,
                                 address    = self.remoteServerAddress,
-                                privateKey = self.getEncryptedPrivKey(username) )
+                                privateKey = self.decryptPrivKey( username, '') )
         return
 
     def closeSSHconnection(self):
@@ -141,6 +141,13 @@ class SGEServerInterface:
         res = self.SSHconnection.returnedText
         self.SSHconnection.returnedText = ''
 
+        return res
+
+    def queryGrep(self, filename, pattern):
+        cmd  = "cat " + filename + " | grep TELESCOPE-WATCH-OUTPUT:"
+        self.SSHconnection.query( cmd )
+        res = self.SSHconnection.returnedText
+        self.SSHconnection.returnedText = ''
         return res
 
     def grabStdOut(self, jobName, jobID, workDir, nlines=20):

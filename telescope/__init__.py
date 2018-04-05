@@ -218,17 +218,10 @@ class server:
         self.logger.info('Database created.')
 
         ## Testing SSH connection
-        # --> this should go to server.py
-        # self.logger.info('Testing SSH connection...')
-        # connection = tlscpSSH( self.credential_username,
-        #                         password   = self.credential_password,
-        #                         address    = self.remoteServerAddress,
-        #                         privateKey = self.telescopeSSHPrivateKey )
-        # self.logger.info('Issuing a command through the SSH connection...')
-        # connection.query( "uname -a" )
-        # self.logger.info('Response received: ' + connection.returnedText + "...")
-        # self.logger.info('Finished testing SSH connection.')
-
+        self.logger.info('Testing SSH connection...')
+        self.ServerInterface.startSSHconnection()
+        self.ServerInterface.closeSSHconnection()
+        self.logger.info('Finished testing SSH connection.')
 
         # Creating a monitor object
         BaseManager.register('jobStatusMonitor', jobStatusMonitor)

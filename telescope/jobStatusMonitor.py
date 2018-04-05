@@ -2,6 +2,7 @@
 import sys, os, io
 import datetime, time
 import numpy as np
+import logging
 
 ## XML parser for qstat outputs
 import xml.etree.ElementTree as ElementTree
@@ -80,18 +81,25 @@ class jobStatusMonitor:
         information about the job status.
         """
 
+        logging.info("statusMonitor: Getting started.")
+
         ## Connecting to the server
+        logging.info("statusMonitor: openning SSH connection.")
         self.ServerInterface.startSSHconnection()
 
         ## Grabbing the result of qstat
+        logging.info("statusMonitor: Retrieving and parsing qstat.")
         self.curStatusParsed = utils.qstatsXMLParser( self.ServerInterface.qstatQuery() )
 
         ## Connecting to the databse
+        logging.info("statusMonitor: Connecting to the database.")
         self.db = db( self.configDatabase )
 
         # Getting number of jobs
         numJobs = len( self.curStatusParsed )
 
+
+        logging.info("statusMonitor: Looping through the jobs")
         if numJobs > 0:
 
             # Getting set of keys
@@ -113,18 +121,16 @@ class jobStatusMonitor:
                         status = 0
 
                     ## Retrieving details about the job
-                    curStatJ = self.ServerInterface.qstatJobQuery(self, statParserd['jobId'] )
+                    curStatJ = self.ServerInterface.qstatJobQuery(statParserd['jobId'] )
                     sgeScriptRun = curStatJ.split( 'script_file:' )[1].split('\n')[0].replace(' ','')
                     sgeOWorkDir  = curStatJ.split( 'sge_o_workdir:' )[1].split('\n')[0].replace(' ','')
 
                     ## Figuring out the output path
                     # Standard SGE output
                     outpath = statParserd['jobName'] + ".o" + str(statParserd['jobId'])
+
                     # Checking for custom output path
-                    command =  "cat " + os.path.join(sgeOWorkDir,sgeScriptRun)
-                    command += " | grep TELESCOPE-WATCH-OUTPUT:"
-                    connection.query( command )
-                    curStatJ = connection.returnedText
+                    curStatJ = self.ServerInterface.queryGrep( os.path.join(sgeOWorkDir,sgeScriptRun), "TELESCOPE-WATCH-OUTPUT")
                     if "TELESCOPE-WATCH-OUTPUT:" in curStatJ:
                         outpath = curStatJ.split("TELESCOPE-WATCH-OUTPUT:")[1].strip(' \t\n\r')
 
@@ -158,5 +164,7 @@ class jobStatusMonitor:
         # Closing the connection to the server
         self.ServerInterface.closeSSHconnection()
 
+
+        logging.info("statusMonitor: finished.")
 
         return

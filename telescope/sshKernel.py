@@ -1,6 +1,6 @@
 import logging, time
 import paramiko
-import os
+import os, io
 from builtins import input
 
 
@@ -16,7 +16,10 @@ class tlscpSSH:
         logging.info("tlscpSSH: Setting up the client.")
 
         if privateKey != None:
-            privkey = paramiko.RSAKey.from_private_key_file( privateKey )
+            pkvar = io.StringIO()
+            pkvar.write(privateKey)
+            pkvar.seek(0)
+            privkey = paramiko.RSAKey.from_private_key( pkvar )
 
         # Instance of the ssh client
         self.sshClient = paramiko.client.SSHClient()
