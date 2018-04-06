@@ -39,6 +39,78 @@ def qstatsXMLParser( status ):
     return qstatParsed
 
 
+def qstatsJXMLParser(status):
+    """
+    Parser for the status coming back from qstat -j.
+    """
+
+    # root = status.getroot()
+    root = ElementTree.fromstring(status)
+    child = root[0] # Get djob_info
+        
+    qstatParsed = {}
+
+    numJobs = len(child)
+    for i in range(numJobs):
+
+        jobInfo = {} # Empty dict to be filled with qstat -j -xml
+
+        jobInfo["username"]  = child[i].find('JB_owner').text
+        jobInfo["group"]     = child[i].find('JB_group').text
+        jobInfo["project"]   = child[i].find('JB_project').text
+        jobInfo["jobName"]   = child[i].find('JB_job_name').text
+        jobInfo["jobId"]     = int(child[i].find('JB_job_number').text)
+        
+        resourceRequests = child[i].find('JB_hard_resource_list').findall('qstat_l_requests')
+        numResources = len(resourceRequests)
+
+        for j in range(numResources):
+
+            currentResName = resourceRequests[j].find('CE_name').text
+            currentResValue = resourceRequests[j].find('CE_stringval').text
+
+            if currentResName == 'highp':
+                jobInfo["highp"] = currentResValue
+            elif currentResName == 'h_rt':
+                jobInfo["h_rt"] = currentResValue
+            elif currentResName == 'h_data':
+                jobInfo["h_data"] = currentResValue
+            elif currentResName == 'h_vmem':
+                jobInfo["h_vmem"] = currentResValue  
+                
+        # If job is started, add information from current job
+        try:
+            jobInfo["startDate"] = child[j].find('JAT_start_time').text
+            
+            resourcesUsed = child[i].find('JB_ja_tasks')[0].find('JAT_scaled_usage_list').findall('scaled')
+            numResourcesUsed = len(resourcesUsed)
+            
+            for k in range(numResourcesUsed):
+
+                currentUAname = resourcesUsed[k].find('UA_name').text
+                currentUAvalue = resourcesUsed[k].find('UA_value').text
+
+                if currentUAname == 'cpu':
+                    jobInfo["cpu"] = currentUAvalue
+                elif currentUAname == 'mem':
+                    jobInfo["mem"] = currentUAvalue
+                elif currentUAname == 'io':
+                    jobInfo["io"] = currentUAvalue
+                elif currentUAname == 'iow':
+                    jobInfo["iow"] = currentUAvalue
+                elif currentUAname == 'vmem':
+                    jobInfo["vmem"] = currentUAvalue
+                elif currentUAname == 'maxvmem':
+                    jobInfo["maxvmem"] = currentUAvalue
+                             
+        except:
+            jobInfo.update(startDate='NA', cpu='NA', mem='NA', io='NA', iow='NA', vmem='NA', maxvmem='NA')
+
+        qstatParsed[ jobInfo["jobId"] ] = jobInfo
+
+    return qstatParsed
+
+
 def parseStatus2HTML( status ):
     if ( status == 'qw' ) or ( status == 'pending'):
         return '<span style="color: #FF0000;">Queued</span>'
