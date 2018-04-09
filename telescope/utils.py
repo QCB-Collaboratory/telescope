@@ -1,25 +1,44 @@
-## XML parser for qstat outputs
+# XML parser for qstat outputs
 import xml.etree.ElementTree as ElementTree
 
 
 def qstatsXMLParser( status ):
     """
-    Parser for the status coming back from qstat.
+    Parser for status coming back from qstat -xml.
+
+    Parses the XML output of qstat -xml. Note that this function supports 
+    multiple jobs.
+
+    Args:
+        status (str): The output of qstat -xml. This argument 
+            should be in string format because the function will use 
+            ElementTree.fromstring(status) to read the XML data.
+            Note: status can include multiple jobs.
+
+    Returns:
+        A dict containing job info for the job(s) in qstat -xml.
+        Short example:
+        {<jobnumber1>: {'jobStatus': 'status1',
+          'jobName': 'jobname1', 
+          'jobId': 'jobid1'}, 
+         <jobnumber2>: {'jobStatus': 'status2',
+          'jobName': 'jobname2', 
+          'jobId': 'jobid2'}}
+    
     """
 
     qstatParsed = {}
 
-    root = ElementTree.fromstring( status )
+    root = ElementTree.fromstring(status)
 
     # Usually qstat will have a child for all running jobs,
     # and a child for all queued jobs.
-
-    for childID in range( len(root) ):
+    for childID in range(len(root)):
 
         child = root[childID]
-        numJobs = len( child )
+        numJobs = len(child)
 
-        for j in range( numJobs ):
+        for j in range(numJobs):
 
             jobInfo = {}
 
@@ -34,14 +53,34 @@ def qstatsXMLParser( status ):
 
             jobInfo["username"] = child[j].find('JB_owner').text
 
-            qstatParsed[ jobInfo["jobId"] ] = jobInfo
+            qstatParsed[jobInfo["jobId"]] = jobInfo
 
     return qstatParsed
 
 
 def qstatsJXMLParser(status):
     """
-    Parser for the status coming back from qstat -j.
+    Parser for the status coming back from qstat -xml -j.
+
+    Parses the XML output of qstat -xml -j, which is the output for a specific 
+    job. Note that this function has support for multiple specific jobs.
+
+    Args:
+        status (str): The output of qstat -xml -j <jobnumber>. This argument 
+            should be in string format because the function will use 
+            ElementTree.fromstring(status) to read the XML data.
+            Note: status can be for multiple comma-separated jobs.
+
+    Returns:
+        A dict containing job info for the job in qstat -xml -j <jobnumber>.
+        Short example:
+        {<jobnumber1>: {'cpu': 'NA',
+          'group': 'groupname', 
+          'project': 'myproject'}, 
+         <jobnumber2>: {'cpu': 'NA',
+          'group': 'groupname', 
+          'project': 'myproject2'}}
+          
     """
 
     # root = status.getroot()
@@ -53,15 +92,16 @@ def qstatsJXMLParser(status):
     numJobs = len(child)
     for i in range(numJobs):
 
-        jobInfo = {} # Empty dict to be filled with qstat -j -xml
+        jobInfo = {}
 
-        jobInfo["username"]  = child[i].find('JB_owner').text
-        jobInfo["group"]     = child[i].find('JB_group').text
-        jobInfo["project"]   = child[i].find('JB_project').text
-        jobInfo["jobName"]   = child[i].find('JB_job_name').text
-        jobInfo["jobId"]     = int(child[i].find('JB_job_number').text)
+        jobInfo["username"] = child[i].find('JB_owner').text
+        jobInfo["group"] = child[i].find('JB_group').text
+        jobInfo["project"] = child[i].find('JB_project').text
+        jobInfo["jobName"] = child[i].find('JB_job_name').text
+        jobInfo["jobId"] = int(child[i].find('JB_job_number').text)
         
-        resourceRequests = child[i].find('JB_hard_resource_list').findall('qstat_l_requests')
+        resourceRequests = (child[i].find('JB_hard_resource_list')
+                                    .findall('qstat_l_requests'))
         numResources = len(resourceRequests)
 
         for j in range(numResources):
@@ -80,9 +120,12 @@ def qstatsJXMLParser(status):
                 
         # If job is started, add information from current job
         try:
+
             jobInfo["startDate"] = child[j].find('JAT_start_time').text
             
-            resourcesUsed = child[i].find('JB_ja_tasks')[0].find('JAT_scaled_usage_list').findall('scaled')
+            resourcesUsed = (child[i].find('JB_ja_tasks')[0]
+                                     .find('JAT_scaled_usage_list')
+                                     .findall('scaled'))
             numResourcesUsed = len(resourcesUsed)
             
             for k in range(numResourcesUsed):
@@ -104,18 +147,20 @@ def qstatsJXMLParser(status):
                     jobInfo["maxvmem"] = currentUAvalue
                              
         except:
-            jobInfo.update(startDate='NA', cpu='NA', mem='NA', io='NA', iow='NA', vmem='NA', maxvmem='NA')
 
-        qstatParsed[ jobInfo["jobId"] ] = jobInfo
+            jobInfo.update(startDate='NA', cpu='NA', mem='NA', 
+                           io='NA', iow='NA', vmem='NA', maxvmem='NA')
+
+        qstatParsed[jobInfo["jobId"]] = jobInfo
 
     return qstatParsed
 
 
-def parseStatus2HTML( status ):
-    if ( status == 'qw' ) or ( status == 'pending'):
+def parseStatus2HTML(status):
+    if (status == 'qw') or (status == 'pending'):
         return '<span style="color: #FF0000;">Queued</span>'
 
-    elif ( status == 'r' ) or ( status == 'running' ):
+    elif (status == 'r') or (status == 'running'):
         return '<span style="color: #00AA00;">Running</span>'
 
     else:
@@ -123,10 +168,13 @@ def parseStatus2HTML( status ):
 
 
 status_dict = {
-    "running" : 2,
-    "pending" : 1
+    "running": 2,
+    "pending": 1
 }
-def parseStatusCode( status ): return status_dict[status]
+
+
+def parseStatusCode(status):
+    return status_dict[status]
 
 
 def cookieQueryParser( cookieString ):
@@ -138,9 +186,8 @@ def cookieQueryParser( cookieString ):
     return actionID, args
 
 
-
 def stringAllUsersMonitored(listUsers):
     """
     Creates a string with the list of all users to be monitored
     """
-    return " " + " ".join( listUsers ) + " "
+    return " " + " ".join(listUsers) + " "
